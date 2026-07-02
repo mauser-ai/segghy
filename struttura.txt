@@ -1,0 +1,88 @@
+# Struttura del gioco interattivo
+
+## Genere
+
+Giallo investigativo narrativo, mobile, a scelte multiple.
+
+## Meccaniche principali
+
+* Dialoghi a scelta multipla.
+* Esplorazione dei paesi limitrofi.
+* Raccolta indizi.
+* Inventario prove.
+* Mappa interattiva.
+* Sistema fiducia con i personaggi.
+* Finali multipli.
+* Minigiochi investigativi: ricostruzione timeline, sblocco telefono, confronto impronte, analisi oggetti.
+
+## Capitoli
+
+### Capitolo 1 — Il ciondolo
+
+Segghy partecipa a una festa a Golasecca. Mauro viene trovato morto. Il suo ciondolo è sulla scena del crimine.
+
+### Capitolo 2 — La riva del Ticino
+
+Con Riccardo, Segghy esplora i sentieri lungo il fiume. Trova impronte, fango e un biglietto bagnato.
+
+### Capitolo 3 — Il maneggio di Manuela
+
+Il cavallo Nebbia reagisce a un suono preciso. I gattini giocano con un oggetto nascosto nella paglia.
+
+### Capitolo 4 — Il telefono di Kledian
+
+A Vergiate, Kledian consegna un telefono rotto. Il giocatore deve sbloccarlo con un minigioco.
+
+### Capitolo 5 — Le sorelle del rifugio
+
+Gaia e Anna rivelano che uno dei gattini è stato trovato vicino alla villa la notte dell’omicidio.
+
+### Capitolo 6 — La mappa falsa
+
+Sofia scopre che le mappe archeologiche sono state alterate da Alessandra.
+
+### Capitolo 7 — Il guardiano del fiume
+
+Moreno confessa di aver spento una telecamera, ma sostiene di averlo fatto per paura.
+
+### Capitolo 8 — La verità al bar
+
+Sandra tradisce una frase che solo l’assassino poteva conoscere.
+
+### Capitolo 9 — Nebbia ricorda
+
+Il cavallo Nebbia guida Segghy verso una zona nascosta del maneggio.
+
+### Capitolo 10 — Il silenzio del Ticino
+
+Confronto finale sulle rive del fiume. Le scelte del giocatore determinano il finale.
+
+## Personaggi
+
+Segghy — protagonista, determinata, sospettata ingiustamente.
+
+Riccardo — amico tecnico, aiuta con telefoni, dati e ricostruzioni.
+
+Matteo — carabiniere, ambiguo ma potenzialmente alleato.
+
+Kledian — meccanico, possiede un indizio chiave.
+
+Manuela — proprietaria del maneggio, figura materna per Segghy.
+
+Sandra — barista di Golasecca, vera assassina nel finale principale.
+
+Gaia — gestisce il rifugio per gattini.
+
+Anna — sorella di Gaia, più intuitiva e silenziosa.
+
+Sofia — studentessa di archeologia.
+
+Adriano — ex socio della vittima.
+
+Cinzia — donna legata al passato del maneggio.
+
+Mauro — vittima.
+
+Moreno — guardiano notturno.
+
+Alessandra — restauratrice e falsificatrice di mappe.
