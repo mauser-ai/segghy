@@ -20,6 +20,7 @@ class _PhoneUnlockMinigameState extends State<PhoneUnlockMinigame>
   String _input = '';
   String? _errore;
   bool _hintVisibile = false;
+  int _tentativi = 0;
   late final AnimationController _shakeController;
 
   @override
@@ -56,8 +57,16 @@ class _PhoneUnlockMinigameState extends State<PhoneUnlockMinigame>
       widget.onSolved();
     } else {
       _shakeController.forward(from: 0);
+      final codice = PhoneUnlockMinigame._codice;
+      int cifreCorrette = 0;
+      for (int i = 0; i < 4; i++) {
+        if (_input[i] == codice[i]) cifreCorrette++;
+      }
       setState(() {
-        _errore = 'Codice errato. Riprova.';
+        _tentativi++;
+        _errore = cifreCorrette == 0
+            ? 'Codice errato: nessuna cifra è nella posizione giusta.'
+            : 'Codice errato: $cifreCorrette ${cifreCorrette == 1 ? "cifra è" : "cifre sono"} nella posizione giusta.';
         _input = '';
       });
     }
@@ -111,7 +120,7 @@ class _PhoneUnlockMinigameState extends State<PhoneUnlockMinigame>
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 20,
+          height: 34,
           child: Text(
             _errore ?? '',
             textAlign: TextAlign.center,
@@ -119,25 +128,41 @@ class _PhoneUnlockMinigameState extends State<PhoneUnlockMinigame>
           ),
         ),
         const SizedBox(height: 12),
-        Center(
-          child: TextButton.icon(
-            onPressed: () => setState(() => _hintVisibile = !_hintVisibile),
-            icon: const Icon(Icons.lightbulb_outline, size: 18),
-            label: Text(_hintVisibile ? 'Nascondi suggerimento' : 'Suggerimento'),
-          ),
-        ),
-        if (_hintVisibile)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+        if (_tentativi == 0)
+          Center(
             child: Text(
-              'Il registro dell\'officina segna: "ultimo tagliando 19/09".',
+              'Prova prima a indovinare: dopo un primo tentativo sbagliato '
+              'saprai quante cifre sono già al posto giusto.',
               textAlign: TextAlign.center,
               style: Theme.of(context)
                   .textTheme
                   .bodyMedium
-                  ?.copyWith(color: AppColors.accentGold),
+                  ?.copyWith(color: AppColors.textMuted, fontSize: 12),
+            ),
+          )
+        else ...[
+          Center(
+            child: TextButton.icon(
+              onPressed: () => setState(() => _hintVisibile = !_hintVisibile),
+              icon: const Icon(Icons.lightbulb_outline, size: 18),
+              label: Text(_hintVisibile ? 'Nascondi suggerimento' : 'Suggerimento'),
             ),
           ),
+          if (_hintVisibile)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                'Il registro dell\'officina segna l\'ultimo tagliando: '
+                '"19 settembre". Il codice usa giorno e mese, ma l\'ordine '
+                'tocca a te capirlo dai tentativi.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: AppColors.accentGold),
+              ),
+            ),
+        ],
         const SizedBox(height: 8),
         _Keypad(onDigit: _addDigit, onBackspace: _removeDigit),
       ],

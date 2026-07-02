@@ -161,6 +161,7 @@ final List<Character> kCharacters = [
   const Character(
     id: 'alessandra',
     nome: 'Alessandra',
+    immagine: 'assets/images/characters/alessandra.png',
     descrizione:
         'Restauratrice, costretta da Mauro a falsificare la datazione di '
         'alcuni reperti per coprire un traffico di scavi clandestini.',

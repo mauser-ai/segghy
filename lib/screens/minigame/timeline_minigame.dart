@@ -10,8 +10,11 @@ class _TimelineEvent {
   const _TimelineEvent(this.testo, this.ordine);
 }
 
-/// Minigioco: ricostruire in ordine cronologico corretto gli eventi della
-/// notte del delitto, trascinando le tessere per riordinarle.
+/// Minigioco: ricostruire l'ordine cronologico corretto degli eventi della
+/// notte del delitto. Niente orari scritti sulle tessere: ogni tessera
+/// rimanda testualmente a quella precedente ("poco dopo...", "quando
+/// ormai...", "subito dopo..."), quindi va risolto seguendo i rimandi
+/// logici tra le testimonianze, non semplicemente leggendo un numero.
 class TimelineMinigame extends StatefulWidget {
   final VoidCallback onSolved;
 
@@ -23,11 +26,31 @@ class TimelineMinigame extends StatefulWidget {
 
 class _TimelineMinigameState extends State<TimelineMinigame> {
   static const List<_TimelineEvent> _eventiInOrdine = [
-    _TimelineEvent('20:30 — Segghy arriva alla festa con il ciondolo al collo', 0),
-    _TimelineEvent('22:10 — Mauro riceve un messaggio e si allontana verso la serra', 1),
-    _TimelineEvent('22:40 — Il campanello di una bicicletta tintinna vicino al cancello sul retro', 2),
-    _TimelineEvent('23:05 — La catenina di Segghy si rompe mentre porta le casse in cantina', 3),
-    _TimelineEvent('23:20 — Un urlo arriva dalla serra: Mauro viene trovato morto', 4),
+    _TimelineEvent(
+      'Segghy arriva alla festa con il ciondolo ancora al collo, '
+      'mentre la musica è appena iniziata.',
+      0,
+    ),
+    _TimelineEvent(
+      'Poco dopo l\'arrivo di Segghy, Mauro riceve un messaggio sul '
+      'telefono e si allontana verso la serra.',
+      1,
+    ),
+    _TimelineEvent(
+      'Con Mauro ormai scomparso verso la serra da un pezzo, la '
+      'catenina di Segghy si rompe mentre porta delle casse in cantina.',
+      2,
+    ),
+    _TimelineEvent(
+      'Quando in giardino restano ormai pochi ospiti, un campanello '
+      'di bicicletta tintinna vicino al cancello sul retro.',
+      3,
+    ),
+    _TimelineEvent(
+      'Subito dopo, un urlo squarcia il silenzio: qualcuno ha trovato '
+      'Mauro a terra nella serra.',
+      4,
+    ),
   ];
 
   late List<_TimelineEvent> _ordine;
@@ -38,6 +61,7 @@ class _TimelineMinigameState extends State<TimelineMinigame> {
     super.initState();
     _ordine = List.of(_eventiInOrdine)..shuffle(math.Random(DateTime.now().millisecond));
     // Evita che il mescolamento produca per caso l'ordine già corretto.
+    if (_isCorrect()) _ordine.shuffle(math.Random(DateTime.now().microsecond + 7));
     if (_isCorrect()) _ordine = _ordine.reversed.toList();
   }
 
@@ -61,7 +85,7 @@ class _TimelineMinigameState extends State<TimelineMinigame> {
     if (_isCorrect()) {
       widget.onSolved();
     } else {
-      setState(() => _messaggio = 'L\'ordine non torna ancora. Riprova.');
+      setState(() => _messaggio = 'Uno dei rimandi non torna ancora. Rileggi con attenzione e riprova.');
     }
   }
 
@@ -74,8 +98,9 @@ class _TimelineMinigameState extends State<TimelineMinigame> {
             style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
         Text(
-          'Tieni premuto e trascina le tessere per rimetterle nell\'ordine '
-          'cronologico corretto della notte del delitto.',
+          'Nessuna testimonianza riporta un orario preciso: ognuna rimanda a '
+          'quella immediatamente precedente ("poco dopo...", "quando '
+          'ormai..."). Leggile tutte, poi trascinale nell\'ordine giusto.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 16),
@@ -102,7 +127,7 @@ class _TimelineMinigameState extends State<TimelineMinigame> {
         ),
         const SizedBox(height: 8),
         SizedBox(
-          height: 20,
+          height: 32,
           child: Text(
             _messaggio ?? '',
             textAlign: TextAlign.center,
