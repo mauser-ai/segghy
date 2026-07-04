@@ -47,6 +47,22 @@ class GameProvider extends ChangeNotifier {
   int suspicionOf(String characterId) =>
       _state.sospettoPersonaggi[characterId] ?? 0;
 
+  /// Elenco dei sospettati tra cui il giocatore può scegliere nel confronto
+  /// finale, ordinati dal più sospetto al meno sospetto per aiutare la
+  /// lettura (senza però nascondere nessuna opzione).
+  List<Character> get suspects {
+    final list = characters.where((c) => c.sospettato).toList();
+    list.sort((a, b) => suspicionOf(b.id).compareTo(suspicionOf(a.id)));
+    return list;
+  }
+
+  /// Personaggio formalmente accusato nel confronto finale, se già scelto.
+  Character? get accusedCharacter {
+    final id = _state.personaggioAccusato;
+    if (id == null) return null;
+    return characterWithState(id);
+  }
+
   /// Indizi con il flag "trovato" aggiornato in base allo stato di partita.
   List<Clue> get clues {
     return kClues
@@ -187,6 +203,20 @@ class GameProvider extends ChangeNotifier {
         : choice.prossimoNodo;
 
     await _goToScene(prossimoId);
+  }
+
+  /// Registra l'accusa formale del giocatore nel confronto finale.
+  /// Se corretta (Sandra), prosegue verso il confronto vero e proprio,
+  /// dove l'esito dipende ancora da indizi e fiducia accumulati. Se
+  /// sbagliata, porta direttamente al finale "errore giudiziario": il
+  /// vero colpevole resta libero e la persona accusata non lo perdona.
+  Future<void> submitAccusation(String characterId) async {
+    _state = _state.copyWith(personaggioAccusato: characterId);
+    if (characterId == 'sandra') {
+      await _goToScene('c10_s2');
+    } else {
+      await _goToScene('c10_finale_erroneo');
+    }
   }
 
   Future<void> _goToScene(String sceneId) async {

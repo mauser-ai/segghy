@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/text_placeholders.dart';
 import '../../core/widgets/atmospheric_background.dart';
 import '../../core/widgets/character_portrait.dart';
 import '../../core/widgets/staggered_entrance.dart';
@@ -10,8 +11,8 @@ import '../../data/mock/characters_data.dart';
 import '../../models/ending.dart';
 import '../../providers/game_provider.dart';
 
-/// Schermata finale: rivela quale dei tre finali il giocatore ha ottenuto,
-/// con un riepilogo del percorso investigativo compiuto.
+/// Schermata finale: rivela quale dei quattro finali il giocatore ha
+/// ottenuto, con un riepilogo del percorso investigativo compiuto.
 class EndingScreen extends StatelessWidget {
   const EndingScreen({super.key});
 
@@ -23,6 +24,8 @@ class EndingScreen extends StatelessWidget {
         return AppColors.textMuted;
       case EndingType.perfetto:
         return AppColors.accentGold;
+      case EndingType.erroneo:
+        return AppColors.accentBlood;
     }
   }
 
@@ -34,6 +37,8 @@ class EndingScreen extends StatelessWidget {
         return Icons.nights_stay_outlined;
       case EndingType.perfetto:
         return Icons.emoji_events_outlined;
+      case EndingType.erroneo:
+        return Icons.gavel_outlined;
     }
   }
 
@@ -133,7 +138,7 @@ class EndingScreen extends StatelessWidget {
               StaggeredEntrance(
                 index: 3,
                 child: Text(
-                  ending.descrizione,
+                  personalizeText(ending.descrizione, provider),
                   textAlign: TextAlign.center,
                   style:
                       Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.7),
@@ -142,7 +147,10 @@ class EndingScreen extends StatelessWidget {
               const SizedBox(height: 28),
               StaggeredEntrance(
                 index: 4,
-                child: _CulpritReveal(ending: ending),
+                child: _CulpritReveal(
+                  ending: ending,
+                  accusedName: provider.accusedCharacter?.nome,
+                ),
               ),
               const SizedBox(height: 28),
               StaggeredEntrance(
@@ -215,7 +223,8 @@ class EndingScreen extends StatelessWidget {
 /// a chi sta ancora leggendo il resoconto del finale sopra di essa.
 class _CulpritReveal extends StatefulWidget {
   final EndingType ending;
-  const _CulpritReveal({required this.ending});
+  final String? accusedName;
+  const _CulpritReveal({required this.ending, this.accusedName});
 
   @override
   State<_CulpritReveal> createState() => _CulpritRevealState();
@@ -232,6 +241,10 @@ class _CulpritRevealState extends State<_CulpritReveal> {
         return 'Le prove raccolte bastano a farla incriminare, anche senza una confessione piena.';
       case EndingType.oscuro:
         return 'Solo tu, ora, sai la verità. Il fascicolo resterà chiuso come "irrisolto".';
+      case EndingType.erroneo:
+        final accusato = widget.accusedName ?? 'la persona sbagliata';
+        return 'Hai accusato $accusato: il vero colpevole non è mai stato scoperto. '
+            'Sandra resta libera, e il caso si chiude senza giustizia.';
     }
   }
 

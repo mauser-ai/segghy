@@ -1276,24 +1276,36 @@ final List<Chapter> kChapters = [
             id: 'c10_s1_a',
             testoScelta: 'Chiedi a Riccardo di avvertire Matteo e farlo arrivare sulla riva.',
             effetto: 'Matteo si nasconde a distanza, pronto a intervenire.',
-            prossimoNodo: 'c10_s2',
+            prossimoNodo: 'c10_accusa',
             modificaFiducia: {'matteo': 5},
           ),
           Choice(
             id: 'c10_s1_b',
             testoScelta: 'Vai da sola: vuoi guardare Sandra negli occhi senza testimoni.',
             effetto: 'Riccardo non è convinto, ma rispetta la tua scelta.',
-            prossimoNodo: 'c10_s2',
+            prossimoNodo: 'c10_accusa',
             modificaFiducia: {'riccardo': -3},
           ),
           Choice(
             id: 'c10_s1_c',
             testoScelta: 'Porta con te Riccardo, ma non Matteo: vuoi testimoni di cui ti fidi.',
             effetto: 'Riccardo, teso ma presente, ti segue sulla riva a distanza di sicurezza.',
-            prossimoNodo: 'c10_s2',
+            prossimoNodo: 'c10_accusa',
             modificaFiducia: {'riccardo': 6},
           ),
         ],
+      ),
+      Scene(
+        id: 'c10_accusa',
+        luogo: 'Golasecca — Riva del Ticino',
+        testoNarrativo:
+            'Sei arrivata sulla riva del Ticino. Riccardo apre sul telefono '
+            'la mappa dell\'indagine costruita insieme, capitolo dopo '
+            'capitolo: indizi, contraddizioni, sguardi sfuggenti, alibi '
+            'incrinati. Prima di fare qualunque altra mossa, è arrivato il '
+            'momento di dire ad alta voce un nome. Ripensa a tutto quello '
+            'che hai scoperto: chi accusi?',
+        richiedeAccusa: true,
       ),
       Scene(
         id: 'c10_s2',
@@ -1379,6 +1391,19 @@ final List<Chapter> kChapters = [
         endingId: 'perfetto',
         isFinaleCapitolo: true,
         indiziOttenibili: ['clue_confessione'],
+      ),
+      Scene(
+        id: 'c10_finale_erroneo',
+        luogo: 'Golasecca — Riva del Ticino',
+        testoNarrativo:
+            'Il nome esce dalla tua bocca prima ancora di averlo deciso fino '
+            'in fondo: {accusato}. Il silenzio che segue è peggiore di '
+            'qualunque urlo. {accusato} nega tutto, sotto shock, e le prove '
+            'che hai raccolto non bastano a reggere un\'accusa così diretta, '
+            'pronunciata davanti a tutti. Riccardo ti guarda, in cerca delle '
+            'parole giuste. Non ce ne sono.',
+        endingId: 'erroneo',
+        isFinaleCapitolo: true,
       ),
     ],
   ),

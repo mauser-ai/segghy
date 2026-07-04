@@ -32,6 +32,11 @@ class GameState {
 
   final EndingType? finale;
 
+  /// Id del personaggio formalmente accusato nel confronto finale, se il
+  /// giocatore ha già effettuato l'accusa. Determina se si raggiunge un
+  /// finale corretto o il finale "errore giudiziario".
+  final String? personaggioAccusato;
+
   final bool partitaIniziata;
 
   /// Timestamp dell'ultimo salvataggio (millisecondi epoch), utile per la
@@ -48,6 +53,7 @@ class GameState {
     this.capitoliCompletati = const {},
     this.minigiochiCompletati = const {},
     this.finale,
+    this.personaggioAccusato,
     this.partitaIniziata = false,
     this.ultimoSalvataggio = 0,
   });
@@ -79,6 +85,7 @@ class GameState {
     Set<String>? capitoliCompletati,
     Set<String>? minigiochiCompletati,
     EndingType? finale,
+    String? personaggioAccusato,
     bool? partitaIniziata,
     int? ultimoSalvataggio,
   }) {
@@ -92,6 +99,7 @@ class GameState {
       capitoliCompletati: capitoliCompletati ?? this.capitoliCompletati,
       minigiochiCompletati: minigiochiCompletati ?? this.minigiochiCompletati,
       finale: finale ?? this.finale,
+      personaggioAccusato: personaggioAccusato ?? this.personaggioAccusato,
       partitaIniziata: partitaIniziata ?? this.partitaIniziata,
       ultimoSalvataggio: ultimoSalvataggio ?? this.ultimoSalvataggio,
     );
@@ -123,6 +131,7 @@ class GameState {
       finale: json['finale'] == null
           ? null
           : EndingType.values.firstWhere((e) => e.name == json['finale']),
+      personaggioAccusato: json['personaggioAccusato'] as String?,
       partitaIniziata: json['partitaIniziata'] as bool? ?? false,
       ultimoSalvataggio: json['ultimoSalvataggio'] as int? ?? 0,
     );
@@ -139,6 +148,7 @@ class GameState {
       'capitoliCompletati': capitoliCompletati.toList(),
       'minigiochiCompletati': minigiochiCompletati.toList(),
       'finale': finale?.name,
+      'personaggioAccusato': personaggioAccusato,
       'partitaIniziata': partitaIniziata,
       'ultimoSalvataggio': ultimoSalvataggio,
     };

@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../../providers/game_provider.dart';
+import '../../screens/accusation/accusation_screen.dart';
 import '../../screens/chapter_select/chapter_select_screen.dart';
 import 'page_transitions.dart';
 import '../../screens/characters/characters_screen.dart';
@@ -24,6 +25,7 @@ const Set<String> _gameRoutes = {
   '/narrative',
   '/dialogue',
   '/minigame',
+  '/accusation',
   '/inventory',
   '/map',
   '/characters',
@@ -105,6 +107,11 @@ GoRouter createAppRouter(GameProvider provider) {
         path: '/minigame',
         pageBuilder: (context, state) =>
             buildFadeThroughPage(key: state.pageKey, child: const MinigameScreen()),
+      ),
+      GoRoute(
+        path: '/accusation',
+        pageBuilder: (context, state) =>
+            buildFadeThroughPage(key: state.pageKey, child: const AccusationScreen()),
       ),
       GoRoute(
         path: '/inventory',

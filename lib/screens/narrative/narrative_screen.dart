@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/scene_backgrounds.dart';
+import '../../core/utils/text_placeholders.dart';
 import '../../core/widgets/clue_found_snackbar.dart';
 import '../../core/widgets/phone_message_overlay.dart';
 import '../../core/widgets/return_to_menu_button.dart';
@@ -57,6 +58,7 @@ class _NarrativeScreenState extends State<NarrativeScreen> {
 
     final minigiocoDaRisolvere =
         scene.minigioco != null && !provider.isMinigameCompleted(scene.id);
+    final accusaDaFare = scene.richiedeAccusa;
     final hasNext = scene.dialoghi.isNotEmpty || scene.scelte.isNotEmpty;
     final isEnding = scene.isFinaleCapitolo && scene.endingId != null;
     final isChapterEnd = scene.isFinaleCapitolo && scene.endingId == null;
@@ -120,7 +122,7 @@ class _NarrativeScreenState extends State<NarrativeScreen> {
                         ),
                         const SizedBox(height: 18),
                         Text(
-                          scene.testoNarrativo,
+                          personalizeText(scene.testoNarrativo, provider),
                           style: Theme.of(context)
                               .textTheme
                               .bodyLarge
@@ -138,6 +140,14 @@ class _NarrativeScreenState extends State<NarrativeScreen> {
                     onPressed: () => context.push('/minigame'),
                     icon: const Icon(Icons.extension_outlined),
                     label: const Text('INDAGA'),
+                  ),
+                )
+              else if (accusaDaFare)
+                _PulsingButton(
+                  child: ElevatedButton.icon(
+                    onPressed: () => context.push('/accusation'),
+                    icon: const Icon(Icons.gavel_outlined),
+                    label: const Text('ACCUSA'),
                   ),
                 )
               else if (hasNext)

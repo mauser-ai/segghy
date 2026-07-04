@@ -55,12 +55,15 @@ void main() {
           }
         }
       }
-      // Ogni scena che non è finale-capitolo deve avere dialoghi+scelte OPPURE
-      // un minigioco che porta a scelte, altrimenti il giocatore resta bloccato.
-      final haContenutoSuccessivo =
-          scene.dialoghi.isNotEmpty || scene.scelte.isNotEmpty || scene.minigioco != null;
+      // Ogni scena che non è finale-capitolo deve avere dialoghi+scelte,
+      // un minigioco, oppure richiedere un'accusa: altrimenti il giocatore
+      // resta bloccato senza alcun modo di proseguire.
+      final haContenutoSuccessivo = scene.dialoghi.isNotEmpty ||
+          scene.scelte.isNotEmpty ||
+          scene.minigioco != null ||
+          scene.richiedeAccusa;
       if (!scene.isFinaleCapitolo && !haContenutoSuccessivo) {
-        errors.add('${scene.id}: non è finale capitolo ma non ha dialoghi/scelte/minigioco (vicolo cieco)');
+        errors.add('${scene.id}: non è finale capitolo ma non ha dialoghi/scelte/minigioco/accusa (vicolo cieco)');
       }
       if (scene.dialoghi.isNotEmpty && scene.scelte.isEmpty && !scene.isFinaleCapitolo) {
         errors.add('${scene.id}: ha dialoghi ma nessuna scelta finale (la scena dialogo non saprebbe come proseguire)');

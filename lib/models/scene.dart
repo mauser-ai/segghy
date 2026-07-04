@@ -35,6 +35,13 @@ class Scene {
   final MinigameType? minigioco;
   final String? indizioMinigioco;
 
+  /// true se, prima di proseguire, il giocatore deve formalmente accusare
+  /// un sospettato tramite la schermata dedicata. Usato solo nel confronto
+  /// finale: la scena non ha dialoghi/scelte proprie perché la
+  /// progressione dipende dall'esito dell'accusa (vedi
+  /// `GameProvider.submitAccusation`).
+  final bool richiedeAccusa;
+
   const Scene({
     required this.id,
     required this.testoNarrativo,
@@ -47,6 +54,7 @@ class Scene {
     this.messaggioAnonimo,
     this.minigioco,
     this.indizioMinigioco,
+    this.richiedeAccusa = false,
   });
 
   factory Scene.fromJson(Map<String, dynamic> json) {
@@ -70,6 +78,7 @@ class Scene {
           ? null
           : MinigameType.values.firstWhere((e) => e.name == json['minigioco']),
       indizioMinigioco: json['indizioMinigioco'] as String?,
+      richiedeAccusa: json['richiedeAccusa'] as bool? ?? false,
     );
   }
 
@@ -86,6 +95,7 @@ class Scene {
       'messaggioAnonimo': messaggioAnonimo,
       'minigioco': minigioco?.name,
       'indizioMinigioco': indizioMinigioco,
+      'richiedeAccusa': richiedeAccusa,
     };
   }
 }
