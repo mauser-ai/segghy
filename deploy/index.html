@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SegghysWood — Segghy e il Silenzio del Ticino</title>
+<meta name="description" content="SegghysWood: un giallo investigativo narrativo ambientato a Golasecca e nei paesi lungo il Ticino. Scarica l'app e scopri chi ha incastrato Segghy.">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+  :root{
+    --bg:#0B0E14;
+    --night:#13202E;
+    --surface:#141A24;
+    --surface-variant:#1C2430;
+    --surface-high:#232C3A;
+    --river-mist:#2E4756;
+    --gold:#C9A24B;
+    --amber:#E0B85C;
+    --blood:#8A2E2E;
+    --teal:#3E8E86;
+    --text:#EDEBE5;
+    --text-secondary:#A9B0BC;
+    --text-muted:#6C7686;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  h1,h2,h3{
+    font-family:Georgia,"Iowan Old Style",Palatino,"Times New Roman",serif;
+    font-weight:700;
+    margin:0 0 .4em;
+    color:var(--text);
+  }
+  a{color:var(--gold);}
+  img{max-width:100%;display:block;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+  section{padding:72px 0;position:relative;}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    min-height:92vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    position:relative;
+    background:
+      radial-gradient(ellipse 60% 40% at 80% 8%, rgba(46,71,86,.35), transparent 60%),
+      radial-gradient(ellipse 50% 35% at 10% 95%, rgba(201,162,75,.10), transparent 60%),
+      linear-gradient(to bottom, var(--night), var(--bg) 70%);
+    overflow:hidden;
+    padding:120px 24px 80px;
+  }
+  .hero::before{
+    content:"";
+    position:absolute;inset:0;
+    background-image:radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.25), transparent),
+      radial-gradient(1px 1px at 70% 20%, rgba(255,255,255,.18), transparent),
+      radial-gradient(1.5px 1.5px at 45% 60%, rgba(255,255,255,.20), transparent),
+      radial-gradient(1px 1px at 85% 75%, rgba(255,255,255,.15), transparent),
+      radial-gradient(1px 1px at 10% 80%, rgba(255,255,255,.15), transparent);
+    animation:twinkle 6s ease-in-out infinite alternate;
+    pointer-events:none;
+  }
+  @keyframes twinkle{from{opacity:.5;}to{opacity:1;}}
+  .hero-inner{position:relative;z-index:1;max-width:640px;}
+  .logo{
+    width:104px;height:104px;
+    margin:0 auto 28px;
+    border-radius:28px;
+    box-shadow:0 0 50px rgba(201,162,75,.35), 0 12px 30px rgba(0,0,0,.5);
+  }
+  .brand{
+    font-size:clamp(2.4rem, 6vw, 3.6rem);
+    letter-spacing:1px;
+    background:linear-gradient(180deg, var(--amber), var(--gold));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .subtitle{
+    font-family:Georgia,serif;
+    color:var(--gold);
+    font-size:clamp(1.1rem,3vw,1.4rem);
+    margin-bottom:6px;
+  }
+  .tagline{color:var(--text-muted);font-size:.95rem;margin-bottom:40px;}
+  .cta-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+  .btn{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:15px 26px;
+    border-radius:12px;
+    font-weight:700;
+    font-size:.95rem;
+    text-decoration:none;
+    letter-spacing:.3px;
+    border:1.4px solid transparent;
+    cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn-primary{background:var(--gold);color:var(--bg);box-shadow:0 8px 24px rgba(201,162,75,.25);}
+  .btn-primary:hover{box-shadow:0 10px 30px rgba(201,162,75,.4);}
+  .btn-outline{background:transparent;color:var(--text);border-color:var(--surface-high);}
+  .btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+
+  /* ---------- Section headers ---------- */
+  .eyebrow{
+    color:var(--gold);
+    text-transform:uppercase;
+    letter-spacing:2px;
+    font-size:.75rem;
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  .section-title{font-size:clamp(1.6rem,4vw,2.2rem);}
+  .section-lede{color:var(--text-secondary);max-width:640px;margin-bottom:40px;}
+  .rule{
+    height:2px;width:56px;
+    background:linear-gradient(90deg, var(--gold), transparent);
+    margin:14px 0 32px;
+  }
+
+  /* ---------- Story ---------- */
+  .story p{color:var(--text-secondary);max-width:720px;}
+  .locations{
+    display:flex;flex-wrap:wrap;gap:10px;margin-top:28px;
+  }
+  .chip{
+    padding:8px 14px;border-radius:999px;
+    background:var(--surface);border:1px solid var(--surface-high);
+    color:var(--text-secondary);font-size:.85rem;
+  }
+
+  /* ---------- Characters ---------- */
+  .char-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(200px,1fr));
+    gap:18px;
+  }
+  .char-card{
+    background:linear-gradient(160deg, var(--surface-variant), var(--surface));
+    border:1px solid var(--surface-high);
+    border-radius:16px;
+    padding:18px;
+    text-align:center;
+    position:relative;
+  }
+  .char-photo{
+    width:84px;height:84px;border-radius:50%;
+    object-fit:cover;object-position:center 20%;
+    margin:0 auto 12px;
+    border:2px solid var(--surface-high);
+    box-shadow:0 0 0 4px rgba(201,162,75,.08);
+  }
+  .char-name{font-family:Georgia,serif;font-size:1.05rem;margin-bottom:2px;}
+  .char-role{color:var(--text-muted);font-size:.75rem;margin-bottom:10px;}
+  .char-bio{color:var(--text-secondary);font-size:.83rem;}
+  .badge-suspect{
+    position:absolute;top:14px;right:14px;
+    background:rgba(138,46,46,.18);
+    border:1px solid var(--blood);
+    color:#e2a3a3;
+    font-size:.62rem;font-weight:700;letter-spacing:.5px;
+    padding:3px 8px;border-radius:999px;
+  }
+
+  /* ---------- Features ---------- */
+  .feat-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;
+  }
+  .feat-card{
+    background:var(--surface);border:1px solid var(--surface-high);
+    border-radius:16px;padding:24px;
+  }
+  .feat-icon{font-size:1.6rem;margin-bottom:12px;}
+  .feat-card h3{font-size:1rem;font-family:inherit;}
+  .feat-card p{color:var(--text-secondary);font-size:.87rem;margin:0;}
+
+  /* ---------- Download ---------- */
+  .download-box{
+    background:linear-gradient(160deg, var(--surface-variant), var(--surface));
+    border:1px solid var(--surface-high);
+    border-radius:20px;
+    padding:40px;
+    text-align:center;
+  }
+  .download-note{color:var(--text-muted);font-size:.8rem;margin-top:20px;max-width:480px;margin-left:auto;margin-right:auto;}
+
+  /* ---------- Secret code ---------- */
+  .vault{
+    background:radial-gradient(ellipse at 50% 0%, rgba(201,162,75,.08), transparent 60%), var(--surface);
+    border:1px solid rgba(201,162,75,.4);
+    border-radius:20px;
+    padding:44px 28px;
+    text-align:center;
+    max-width:480px;
+    margin:0 auto;
+  }
+  .vault-icon{font-size:2rem;margin-bottom:14px;}
+  .code-inputs{display:flex;gap:10px;justify-content:center;margin:26px 0 14px;}
+  .code-inputs input{
+    width:52px;height:64px;
+    text-align:center;
+    font-size:1.6rem;
+    font-family:Georgia,serif;
+    background:var(--surface-high);
+    border:1.5px solid var(--surface-high);
+    border-radius:10px;
+    color:var(--text);
+    outline:none;
+  }
+  .code-inputs input:focus{border-color:var(--gold);}
+  .code-inputs.shake{animation:shake .4s;}
+  @keyframes shake{
+    10%,90%{transform:translateX(-4px);}
+    20%,80%{transform:translateX(6px);}
+    30%,50%,70%{transform:translateX(-8px);}
+    40%,60%{transform:translateX(8px);}
+  }
+  .code-error{color:#e2a3a3;font-size:.82rem;height:20px;margin-bottom:10px;}
+  .code-success{display:none;}
+  .code-success.show{display:block;}
+  .code-form.hidden{display:none;}
+
+  footer{
+    text-align:center;
+    padding:50px 24px 70px;
+    color:var(--text-muted);
+    font-size:.82rem;
+  }
+  footer .rule{margin:0 auto 20px;}
+
+  @media (max-width:640px){
+    section{padding:56px 0;}
+    .cta-row{flex-direction:column;align-items:stretch;}
+  }
+</style>
+</head>
+<body>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <img class="logo" src="assets/branding/logo.png" alt="SegghysWood">
+      <h1 class="brand">SegghysWood</h1>
+      <div class="subtitle">Segghy e il Silenzio del Ticino</div>
+      <p class="tagline">Un giallo investigativo narrativo lungo il fiume</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="SegghysWood.apk" download>⬇ Scarica per Android</a>
+        <a class="btn btn-outline" href="gioco/">▶ Gioca nel browser</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="story wrap" id="storia">
+    <div class="eyebrow">La storia</div>
+    <h2 class="section-title">Golasecca non dimentica</h2>
+    <div class="rule"></div>
+    <p>
+      Segghy è cresciuta tra le stradine tranquille di Golasecca e i sentieri
+      lungo il Ticino. Lavora al maneggio di Manuela, dove si prende cura dei
+      cavalli e di una cucciolata di gattini, e non si separa mai dal suo
+      ciondolo a forma di cavallo.
+    </p>
+    <p>
+      Una sera d'autunno, durante una festa privata, Mauro viene trovato
+      morto. Accanto al corpo, un ciondolo identico al suo. Da quel momento,
+      Segghy diventa la principale sospettata di un omicidio che non ha
+      commesso.
+    </p>
+    <p>
+      Con l'aiuto di un amico d'infanzia e di chiunque sia disposto a
+      parlare, dovrà esplorare i paesi lungo il fiume, raccogliere indizi,
+      decidere di chi fidarsi — e scoprire chi ha davvero voluto incastrarla,
+      prima che sia troppo tardi.
+    </p>
+    <div class="locations">
+      <span class="chip">Golasecca</span>
+      <span class="chip">Sesto Calende</span>
+      <span class="chip">Somma Lombardo</span>
+      <span class="chip">Vergiate</span>
+      <span class="chip">Castelletto sopra Ticino</span>
+      <span class="chip">Arsago Seprio</span>
+    </div>
+  </section>
+
+  <section class="wrap" id="personaggi">
+    <div class="eyebrow">Chi incontrerai</div>
+    <h2 class="section-title">I personaggi</h2>
+    <p class="section-lede">Ogni persona che incontri lungo il fiume ha qualcosa da nascondere. Nessuno è quello che sembra — sta a te capire di chi fidarti.</p>
+    <div class="char-grid" id="charGrid"></div>
+  </section>
+
+  <section class="wrap" id="gioco-info">
+    <div class="eyebrow">Come si gioca</div>
+    <h2 class="section-title">Un'indagine da vivere</h2>
+    <div class="rule"></div>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-icon">💬</div>
+        <h3>Dialoghi interattivi</h3>
+        <p>Conversazioni in stile visual novel, con scelte che cambiano davvero il corso dell'indagine.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🧩</div>
+        <h3>Enigmi investigativi</h3>
+        <p>Sblocca telefoni, confronta impronte, analizza mappe e ricostruisci la cronologia della notte del delitto.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🕵️</div>
+        <h3>Fiducia e sospetto</h3>
+        <p>Ogni scelta modifica quanto ti fidi — e quanto sospetti — di ciascun personaggio.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🔀</div>
+        <h3>Finali multipli</h3>
+        <p>Il modo in cui indaghi determina come va a finire. Non tutte le partite si concludono allo stesso modo.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="scarica">
+    <div class="download-box">
+      <div class="eyebrow">Inizia l'indagine</div>
+      <h2 class="section-title">Scarica SegghysWood</h2>
+      <div class="cta-row" style="margin-top:24px;">
+        <a class="btn btn-primary" href="SegghysWood.apk" download>⬇ Scarica per Android (APK)</a>
+        <a class="btn btn-outline" href="gioco/">▶ Gioca nel browser</a>
+      </div>
+      <p class="download-note">
+        Su Android, al primo avvio potrebbe comparire un avviso per le app da
+        fonti sconosciute: è normale per un'app installata fuori dal Play
+        Store, consenti pure l'installazione. La versione browser funziona
+        anche su computer, senza bisogno di scaricare nulla.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap" id="segreto">
+    <div class="vault">
+      <div class="vault-icon">🔒</div>
+      <h2 class="section-title" style="font-size:1.5rem;">Un ultimo segreto</h2>
+      <p style="color:var(--text-secondary);font-size:.9rem;">
+        Se hai risolto il caso fino in fondo, l'ultimo enigma del gioco ti ha
+        dato un codice a 4 cifre. Inseriscilo qui.
+      </p>
+
+      <form class="code-form" id="codeForm" autocomplete="off">
+        <div class="code-inputs" id="codeInputs">
+          <input inputmode="numeric" pattern="[0-9]" maxlength="1" type="text">
+          <input inputmode="numeric" pattern="[0-9]" maxlength="1" type="text">
+          <input inputmode="numeric" pattern="[0-9]" maxlength="1" type="text">
+          <input inputmode="numeric" pattern="[0-9]" maxlength="1" type="text">
+        </div>
+        <div class="code-error" id="codeError"></div>
+        <button type="submit" class="btn btn-primary">Sblocca</button>
+      </form>
+
+      <div class="code-success" id="codeSuccess">
+        <p style="color:var(--text-secondary);font-size:.9rem;">Il fiume restituisce quello che ti spetta.</p>
+        <a class="btn btn-primary" href="https://riccardosacchetto.it/segghy/Andrea_JOJI.pdf" target="_blank" rel="noopener">
+          🎁 Apri la sorpresa
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="rule"></div>
+    Golasecca ti aspetta.
+  </footer>
+
+<script>
+  const characters = [
+    {name:"Segghy", role:"Protagonista", place:"Golasecca", img:"segghy.png",
+      bio:"Cresciuta tra le stradine di Golasecca, non si separa mai dal suo ciondolo a forma di cavallo."},
+    {name:"Riccardo", role:"Amico tecnico", place:"Golasecca", img:"riccardo.png",
+      bio:"Amico d'infanzia di Segghy. La aiuta a incrociare indizi e a costruire la mappa dell'indagine."},
+    {name:"Matteo", role:"Carabiniere", place:"Sesto Calende", img:"matteo.png",
+      bio:"Conosce Segghy da sempre. Vorrebbe proteggerla, ma non può dirle tutto quello che sa."},
+    {name:"Kledian", role:"Meccanico", place:"Vergiate", img:"kledian.png",
+      bio:"L'ultimo ad aver visto Mauro vivo. Nella sua officina custodisce un telefono che potrebbe cambiare tutto."},
+    {name:"Manuela", role:"Proprietaria del maneggio", place:"Somma Lombardo", img:"manuela.png", suspect:true,
+      bio:"Una seconda madre per Segghy. Ma anche lei ha un passato in comune con la vittima."},
+    {name:"Sandra", role:"Barista", place:"Golasecca", img:"sandra.png", suspect:true,
+      bio:"Gentile, sorridente, sempre pronta ad ascoltare chiunque entri nel suo bar. Sa più di quanto lasci intendere."},
+    {name:"Gaia", role:"Rifugio gattini", place:"Golasecca", img:"gaia.png",
+      bio:"Gestisce un piccolo rifugio per gattini lungo il fiume, insieme alla sorella Anna."},
+    {name:"Anna", role:"Rifugio gattini", place:"Golasecca", img:"anna.png",
+      bio:"Più silenziosa di Gaia, ma nota dettagli che a tutti sfuggono."},
+    {name:"Sofia", role:"Studentessa di archeologia", place:"Arsago Seprio", img:"sofia.png",
+      bio:"Appassionata di storia locale, è tra le prime a capire cosa nasconda davvero il caso."},
+    {name:"Adriano", role:"Ex socio della vittima", place:"Sesto Calende", img:"adriano.png", suspect:true,
+      bio:"Mauro gli ha rubato più di un affare. Ha tutte le ragioni per odiarlo."},
+    {name:"Cinzia", role:"Legata al maneggio", place:"Somma Lombardo", img:"cinzia.png", suspect:true,
+      bio:"Un tempo il maneggio era suo. Poi è arrivato Mauro."},
+    {name:"Mauro", role:"Vittima", place:"Golasecca", img:"mauro.png",
+      bio:"Un uomo con troppi segreti e troppi nemici. La sua morte è l'inizio di tutto."},
+    {name:"Moreno", role:"Guardiano", place:"Castelletto sopra Ticino", img:"moreno.png", suspect:true,
+      bio:"Sorveglia le rive del fiume ogni notte. Quella notte, però, ha guardato altrove."},
+    {name:"Alessandra", role:"Restauratrice", place:"Arsago Seprio", img:"alessandra.png", suspect:true,
+      bio:"Esperta di reperti antichi, costretta a nascondere una verità scomoda."},
+  ];
+
+  const grid = document.getElementById('charGrid');
+  grid.innerHTML = characters.map(c => `
+    <div class="char-card">
+      ${c.suspect ? '<span class="badge-suspect">SOSPETTATO</span>' : ''}
+      <img class="char-photo" src="assets/characters/${c.img}" alt="${c.name}" loading="lazy">
+      <div class="char-name">${c.name}</div>
+      <div class="char-role">${c.role} · ${c.place}</div>
+      <div class="char-bio">${c.bio}</div>
+    </div>
+  `).join('');
+
+  // ---- Secret code gate ----
+  const SECRET_CODE = "4422";
+  const inputs = Array.from(document.querySelectorAll('#codeInputs input'));
+  const codeForm = document.getElementById('codeForm');
+  const codeInputsWrap = document.getElementById('codeInputs');
+  const codeError = document.getElementById('codeError');
+  const codeSuccess = document.getElementById('codeSuccess');
+
+  inputs.forEach((el, i) => {
+    el.addEventListener('input', () => {
+      el.value = el.value.replace(/[^0-9]/g, '').slice(0, 1);
+      if (el.value && i < inputs.length - 1) inputs[i + 1].focus();
+    });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !el.value && i > 0) inputs[i - 1].focus();
+    });
+  });
+
+  codeForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const entered = inputs.map(i => i.value).join('');
+    if (entered.length < 4) {
+      codeError.textContent = 'Inserisci tutte e 4 le cifre.';
+      return;
+    }
+    if (entered === SECRET_CODE) {
+      codeError.textContent = '';
+      codeForm.classList.add('hidden');
+      codeSuccess.classList.add('show');
+    } else {
+      codeError.textContent = 'Codice errato. Riprova.';
+      codeInputsWrap.classList.remove('shake');
+      void codeInputsWrap.offsetWidth;
+      codeInputsWrap.classList.add('shake');
+      inputs.forEach(i => i.value = '');
+      inputs[0].focus();
+    }
+  });
+</script>
+</body>
+</html>

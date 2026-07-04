@@ -1,6 +1,6 @@
-# segghy_ticino
+# SegghysWood
 
-Segghy e il Silenzio del Ticino - gioco investigativo narrativo
+Segghy e il Silenzio del Ticino - gioco investigativo narrativo in Flutter.
 
 ## Getting Started
 

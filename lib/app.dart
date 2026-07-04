@@ -13,7 +13,7 @@ class SegghyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Segghy e il Silenzio del Ticino',
+      title: 'SegghysWood',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       darkTheme: AppTheme.dark,

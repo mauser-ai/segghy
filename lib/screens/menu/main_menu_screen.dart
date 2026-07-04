@@ -33,12 +33,26 @@ class MainMenuScreen extends StatelessWidget {
               StaggeredEntrance(
                 index: 1,
                 child: Text(
-                  'Segghy e il\nSilenzio del Ticino',
+                  'SegghysWood',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.displayMedium,
+                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                        letterSpacing: 1,
+                      ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
+              StaggeredEntrance(
+                index: 2,
+                child: Text(
+                  'Segghy e il Silenzio del Ticino',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(color: AppColors.accentGold),
+                ),
+              ),
+              const SizedBox(height: 4),
               StaggeredEntrance(
                 index: 2,
                 child: Text(

@@ -62,13 +62,13 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'SEGGHY',
+                  'SEGGHYSWOOD',
                   style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        letterSpacing: 6,
+                        letterSpacing: 4,
                       ),
                 ),
                 Text(
-                  'e il Silenzio del Ticino',
+                  'Segghy e il Silenzio del Ticino',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: AppColors.textSecondary,
                         letterSpacing: 2,

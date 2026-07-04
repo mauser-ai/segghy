@@ -1,4 +1,4 @@
-package com.segghy.ticino.segghy_ticino
+package com.segghyswood.app
 
 import io.flutter.embedding.android.FlutterActivity
 

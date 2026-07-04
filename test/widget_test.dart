@@ -4,9 +4,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
-import 'package:segghy_ticino/app.dart';
-import 'package:segghy_ticino/core/router/app_router.dart';
-import 'package:segghy_ticino/providers/game_provider.dart';
+import 'package:segghyswood/app.dart';
+import 'package:segghyswood/core/router/app_router.dart';
+import 'package:segghyswood/providers/game_provider.dart';
 
 void main() {
   testWidgets('App avvia mostrando la splash screen', (tester) async {
@@ -19,6 +19,6 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('SEGGHY'), findsOneWidget);
+    expect(find.text('SEGGHYSWOOD'), findsOneWidget);
   });
 }

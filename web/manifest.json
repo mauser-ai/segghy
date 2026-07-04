@@ -1,11 +1,11 @@
 {
-    "name": "segghy_ticino",
-    "short_name": "segghy_ticino",
+    "name": "SegghysWood",
+    "short_name": "SegghysWood",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "Segghy e il Silenzio del Ticino - gioco investigativo narrativo",
+    "background_color": "#0B0E14",
+    "theme_color": "#C9A24B",
+    "description": "SegghysWood - Segghy e il Silenzio del Ticino - gioco investigativo narrativo",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

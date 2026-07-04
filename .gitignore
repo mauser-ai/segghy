@@ -33,6 +33,13 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Deploy folder: only the landing page source and its small image assets are
+# tracked. The compiled web build and the release APK are large build
+# artifacts (kept locally, uploaded manually via FTP) and are excluded here,
+# same as /build/ above.
+/deploy/gioco/
+/deploy/*.apk
+
 # Symbolication related
 app.*.symbols
 
