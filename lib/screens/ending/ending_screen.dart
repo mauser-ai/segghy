@@ -152,9 +152,43 @@ class EndingScreen extends StatelessWidget {
                   accusedName: provider.accusedCharacter?.nome,
                 ),
               ),
+              if (ending != EndingType.erroneo) ...[
+                const SizedBox(height: 20),
+                StaggeredEntrance(
+                  index: 5,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.accentGold.withValues(alpha: 0.15),
+                          AppColors.accentGold.withValues(alpha: 0.03),
+                        ],
+                      ),
+                      border: Border.all(color: AppColors.accentGold.withValues(alpha: 0.5)),
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.diamond_outlined, color: AppColors.accentGold, size: 28),
+                        const SizedBox(height: 8),
+                        Text('Hai risolto il caso: un ultimo segreto ti aspetta.',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: () => context.push('/escape-room'),
+                          icon: const Icon(Icons.key_outlined),
+                          label: const Text('L\'ULTIMO ENIGMA'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 28),
               StaggeredEntrance(
-                index: 5,
+                index: 6,
                 child: Card(
                   child: Padding(
                     padding: const EdgeInsets.all(18),
@@ -191,7 +225,7 @@ class EndingScreen extends StatelessWidget {
               ),
               const SizedBox(height: 28),
               StaggeredEntrance(
-                index: 6,
+                index: 7,
                 child: ElevatedButton.icon(
                   onPressed: () async {
                     await provider.resetGame();
@@ -203,7 +237,7 @@ class EndingScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               StaggeredEntrance(
-                index: 7,
+                index: 8,
                 child: OutlinedButton.icon(
                   onPressed: () => context.go('/menu'),
                   icon: const Icon(Icons.home_outlined),

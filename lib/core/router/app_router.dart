@@ -7,6 +7,7 @@ import 'page_transitions.dart';
 import '../../screens/characters/characters_screen.dart';
 import '../../screens/dialogue/dialogue_screen.dart';
 import '../../screens/ending/ending_screen.dart';
+import '../../screens/escape_room/escape_room_screen.dart';
 import '../../screens/inventory/inventory_screen.dart';
 import '../../screens/map/map_screen.dart';
 import '../../screens/menu/main_menu_screen.dart';
@@ -31,6 +32,7 @@ const Set<String> _gameRoutes = {
   '/characters',
   '/chapters',
   '/ending',
+  '/escape-room',
 };
 
 /// Costruisce la configurazione delle rotte (Navigator 2.0 via GoRouter),
@@ -132,6 +134,11 @@ GoRouter createAppRouter(GameProvider provider) {
         path: '/ending',
         pageBuilder: (context, state) =>
             buildFadeThroughPage(key: state.pageKey, child: const EndingScreen()),
+      ),
+      GoRoute(
+        path: '/escape-room',
+        pageBuilder: (context, state) =>
+            buildFadeThroughPage(key: state.pageKey, child: const EscapeRoomScreen()),
       ),
     ],
   );
