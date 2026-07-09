@@ -12,10 +12,12 @@ import '../../providers/game_provider.dart';
 /// Ultimo enigma del gioco, sbloccato solo dopo aver individuato la vera
 /// colpevole. In stile "escape room" a due fasi:
 ///
-/// 1. Un cifrario di Cesare inciso sul retro della fibula: il giocatore
-///    ruota una "ghiera" (0-25 posizioni) finché il testo cifrato non torna
-///    a essere italiano leggibile — un vero e proprio lavoro di
-///    decifrazione, non una lettura diretta.
+/// 1. Un cifrario di Cesare inciso sul retro della fibula: la prima parola
+///    cifrata ha solo due lettere ("UX"). Il giocatore deve riconoscere a
+///    quale parola italiana breve corrisponda più probabilmente — non c'è
+///    una rotazione da scorrere meccanicamente, la sua ipotesi determina
+///    la rotazione applicata a tutto il messaggio, che va poi giudicato
+///    (leggibile o no) senza alcun indizio visivo automatico.
 /// 2. Una volta decifrata la frase, il giocatore compone il codice a 4
 ///    cifre che vi è nascosto sul tastierino numerico.
 class EscapeRoomScreen extends StatefulWidget {
@@ -30,17 +32,26 @@ enum _Stage { cifrario, codice, rivelazione }
 class _EscapeRoomScreenState extends State<EscapeRoomScreen>
     with SingleTickerProviderStateMixin {
   // Cifrario di Cesare: il testo cifrato qui sotto, ruotato all'indietro di
-  // 12 posizioni (tante quanti i capitoli dell'indagine), torna a essere
-  // "IL FIUME SUSSURRA QUATTRO QUATTRO DUE DUE".
+  // 12 posizioni, torna a essere "IL FIUME SUSSURRA QUATTRO QUATTRO DUE
+  // DUE". La prima parola cifrata "UX" ha lo stesso scarto alfabetico di
+  // "IL" (I→L = +3 posizioni, come U→X): un giocatore che riconosce "IL"
+  // come parola breve plausibile può risalire alla rotazione da solo,
+  // senza bisogno di provare tutte le 26 combinazioni.
   static const String _cipherText =
       'UX RUGYQ EGEEGDDM CGMFFDA CGMFFDA PGQ PGQ';
   static const String _targetPlaintext =
       'IL FIUME SUSSURRA QUATTRO QUATTRO DUE DUE';
   static const String _codice = '4422';
 
+  // Parole italiane brevi plausibili per la prima parola cifrata: solo una
+  // (IL) produce una rotazione che rende leggibile l'intero messaggio.
+  static const List<String> _wordCandidates = [
+    'IL', 'LO', 'LA', 'UN', 'DI', 'DA', 'SU', 'TI', 'MI', 'SI',
+  ];
+
   _Stage _stage = _Stage.cifrario;
 
-  int _shift = 0;
+  String? _selectedGuess;
   String? _decodedAttempt;
   String? _cifrarioErrore;
   bool _hintVisible = false;
@@ -79,21 +90,14 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
     return buffer.toString();
   }
 
-  void _changeShift(int delta) {
+  void _tryGuess(String guess) {
+    // La rotazione si deduce dalla prima lettera cifrata ('U') confrontata
+    // con la prima lettera della parola ipotizzata: è la scelta della
+    // parola, non un numero scorso a caso, a determinare il risultato.
+    final shift = (('U'.codeUnitAt(0) - 65) - (guess.codeUnitAt(0) - 65)) % 26;
     setState(() {
-      _shift = (_shift + delta) % 26;
-      if (_shift < 0) _shift += 26;
-      // Cambiare rotazione invalida il tentativo precedente: bisogna
-      // decifrare di nuovo per vedere il risultato aggiornato, niente
-      // anteprima automatica che regali la soluzione mentre si scorre.
-      _decodedAttempt = null;
-      _cifrarioErrore = null;
-    });
-  }
-
-  void _decodeAttempt() {
-    setState(() {
-      _decodedAttempt = _decode(_shift);
+      _selectedGuess = guess;
+      _decodedAttempt = _decode(shift < 0 ? shift + 26 : shift);
       _tentativiDecifra++;
       _cifrarioErrore = null;
     });
@@ -106,7 +110,7 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
     } else {
       _shakeController.forward(from: 0);
       setState(() {
-        _cifrarioErrore = 'Non sembra italiano leggibile. Prova un\'altra rotazione.';
+        _cifrarioErrore = 'Non sembra italiano leggibile. Prova un\'altra parola.';
       });
     }
   }
@@ -194,16 +198,15 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
               _Stage.cifrario => _CifrarioStage(
                   key: const ValueKey('cifrario'),
                   cipherText: _cipherText,
-                  shift: _shift,
+                  candidates: _wordCandidates,
+                  selectedGuess: _selectedGuess,
                   decodedAttempt: _decodedAttempt,
                   errore: _cifrarioErrore,
                   shakeController: _shakeController,
-                  onShiftDown: () => _changeShift(-1),
-                  onShiftUp: () => _changeShift(1),
-                  onDecodeAttempt: _decodeAttempt,
+                  onGuess: _tryGuess,
                   onContinua: _confirmCifrario,
                   hintVisible: _hintVisible,
-                  showHintButton: _tentativiDecifra > 8,
+                  showHintButton: _tentativiDecifra > 5,
                   onToggleHint: () => setState(() => _hintVisible = !_hintVisible),
                 ),
               _Stage.codice => _CodiceStage(
@@ -225,19 +228,20 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
   }
 }
 
-/// Fase 1: la ghiera del cifrario di Cesare. Niente anteprima in tempo
-/// reale: la rotazione si imposta a scatti e va decifrata esplicitamente,
-/// e il risultato non si colora mai da solo — tocca al giocatore leggerlo
-/// e giudicare se è italiano corretto prima di confermarlo.
+/// Fase 1: crittanalisi della fibula. Niente rotazione da scorrere: la
+/// prima parola cifrata ha solo due lettere, e la scelta di quale parola
+/// italiana breve rappresenti — un ragionamento linguistico, non un
+/// tentativo meccanico — determina la rotazione applicata a tutto il
+/// messaggio. Il risultato non si colora mai da solo: tocca al giocatore
+/// leggerlo e giudicare se è italiano corretto prima di confermarlo.
 class _CifrarioStage extends StatelessWidget {
   final String cipherText;
-  final int shift;
+  final List<String> candidates;
+  final String? selectedGuess;
   final String? decodedAttempt;
   final String? errore;
   final AnimationController shakeController;
-  final VoidCallback onShiftDown;
-  final VoidCallback onShiftUp;
-  final VoidCallback onDecodeAttempt;
+  final ValueChanged<String> onGuess;
   final VoidCallback onContinua;
   final bool hintVisible;
   final bool showHintButton;
@@ -246,13 +250,12 @@ class _CifrarioStage extends StatelessWidget {
   const _CifrarioStage({
     super.key,
     required this.cipherText,
-    required this.shift,
+    required this.candidates,
+    required this.selectedGuess,
     required this.decodedAttempt,
     required this.errore,
     required this.shakeController,
-    required this.onShiftDown,
-    required this.onShiftUp,
-    required this.onDecodeAttempt,
+    required this.onGuess,
     required this.onContinua,
     required this.hintVisible,
     required this.showHintButton,
@@ -261,6 +264,7 @@ class _CifrarioStage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final firstCipherWord = cipherText.split(' ').first;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -270,8 +274,10 @@ class _CifrarioStage extends StatelessWidget {
           'Sofia riconosce l\'incisione sul retro della fibula: non è '
           'decorazione, è un cifrario a rotazione — lo stesso usato dai '
           'trafficanti di reperti per nascondere le coordinate degli scavi. '
-          'Imposta una rotazione, decifra, e leggi tu stessa se il '
-          'risultato ha senso: la ghiera non te lo dirà da sola.',
+          'La prima parola, "$firstCipherWord", ha solo due lettere: a '
+          'quale parola italiana breve potrebbe corrispondere? La tua '
+          'ipotesi decide come viene decifrato tutto il resto — e solo '
+          'leggendolo saprai se hai indovinato.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 20),
@@ -299,44 +305,35 @@ class _CifrarioStage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton.filledTonal(
-              onPressed: onShiftDown,
-              icon: const Icon(Icons.remove),
-              tooltip: 'Riduci rotazione',
-            ),
-            SizedBox(
-              width: 96,
-              child: Column(
-                children: [
-                  Text('ROTAZIONE',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textMuted, fontSize: 10, letterSpacing: 1.5)),
-                  Text('$shift',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineMedium
-                          ?.copyWith(color: AppColors.accentGold)),
-                ],
+        Text('"$firstCipherWord" POTREBBE ESSERE...',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textMuted, fontSize: 11, letterSpacing: 1.5)),
+        const SizedBox(height: 10),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 10,
+          runSpacing: 10,
+          children: candidates.map((word) {
+            final selected = selectedGuess == word;
+            return ChoiceChip(
+              label: Text(word),
+              selected: selected,
+              onSelected: (_) => onGuess(word),
+              selectedColor: AppColors.accentGold.withValues(alpha: 0.22),
+              backgroundColor: AppColors.surfaceHigh,
+              side: BorderSide(
+                color: selected
+                    ? AppColors.accentGold
+                    : AppColors.surfaceVariant,
               ),
-            ),
-            IconButton.filledTonal(
-              onPressed: onShiftUp,
-              icon: const Icon(Icons.add),
-              tooltip: 'Aumenta rotazione',
-            ),
-          ],
+              labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: selected ? AppColors.accentGold : AppColors.textPrimary,
+                  fontWeight: selected ? FontWeight.bold : FontWeight.normal),
+            );
+          }).toList(),
         ),
-        const SizedBox(height: 16),
-        OutlinedButton.icon(
-          onPressed: onDecodeAttempt,
-          icon: const Icon(Icons.sync_outlined),
-          label: const Text('DECIFRA CON QUESTA ROTAZIONE'),
-        ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         AnimatedBuilder(
           animation: shakeController,
           builder: (context, child) {
@@ -363,7 +360,7 @@ class _CifrarioStage extends StatelessWidget {
                         color: AppColors.accentGold, fontSize: 11, letterSpacing: 1.5)),
                 const SizedBox(height: 8),
                 Text(
-                  decodedAttempt ?? '— premi "decifra" per vedere il risultato —',
+                  decodedAttempt ?? '— scegli una parola qui sopra per vedere il risultato —',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontFamily: 'monospace',
@@ -397,7 +394,8 @@ class _CifrarioStage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
-                'Il numero dei capitoli della tua indagine potrebbe non essere un caso.',
+                'È l\'articolo determinativo maschile singolare più comune '
+                'della lingua italiana.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context)
                     .textTheme
