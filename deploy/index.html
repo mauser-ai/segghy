@@ -23,9 +23,10 @@
     --text-muted:#6C7686;
   }
   *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
+  html{scroll-behavior:smooth;background:var(--bg);}
   body{
-    margin:0;
+    margin:0 auto;
+    max-width:480px;
     background:var(--bg);
     color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -40,8 +41,8 @@
   }
   a{color:var(--gold);}
   img{max-width:100%;display:block;}
-  .wrap{max-width:1080px;margin:0 auto;padding-left:28px;padding-right:28px;}
-  section{padding-top:128px;padding-bottom:128px;position:relative;}
+  .wrap{padding-left:24px;padding-right:24px;}
+  section{padding-top:80px;padding-bottom:80px;position:relative;}
 
   /* ---------- Hero ---------- */
   .hero{
@@ -56,7 +57,7 @@
       radial-gradient(ellipse 50% 35% at 10% 95%, rgba(201,162,75,.10), transparent 60%),
       linear-gradient(to bottom, var(--night), var(--bg) 70%);
     overflow:hidden;
-    padding:120px 24px 80px;
+    padding:100px 24px 72px;
   }
   .hero::before{
     content:"";
@@ -93,7 +94,7 @@
     margin-bottom:10px;
   }
   .tagline{color:var(--text-muted);font-size:.95rem;margin-bottom:48px;}
-  .cta-row{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;}
+  .cta-row{display:flex;flex-direction:column;align-items:stretch;gap:14px;}
   .btn{
     display:inline-flex;align-items:center;gap:10px;
     padding:16px 28px;
@@ -121,28 +122,28 @@
     font-weight:700;
     margin-bottom:12px;
   }
-  .section-title{font-size:clamp(1.6rem,4vw,2.2rem);}
-  .section-lede{color:var(--text-secondary);max-width:640px;margin-bottom:56px;}
+  .section-title{font-size:clamp(1.5rem,6vw,1.9rem);}
+  .section-lede{color:var(--text-secondary);margin-bottom:40px;}
   .rule{
     height:2px;width:56px;
     background:linear-gradient(90deg, var(--gold), transparent);
-    margin:22px 0 48px;
+    margin:18px 0 36px;
   }
 
   /* ---------- Story ---------- */
-  .story p{color:var(--text-secondary);max-width:720px;margin:0 0 26px;}
+  .story p{color:var(--text-secondary);margin:0 0 20px;}
 
   /* ---------- Characters ---------- */
   .char-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(220px,1fr));
-    gap:28px;
+    grid-template-columns:1fr;
+    gap:20px;
   }
   .char-card{
     background:linear-gradient(160deg, var(--surface-variant), var(--surface));
     border:1px solid var(--surface-high);
     border-radius:16px;
-    padding:32px 24px;
+    padding:28px 20px;
     text-align:center;
     position:relative;
   }
@@ -159,11 +160,11 @@
 
   /* ---------- Features ---------- */
   .feat-grid{
-    display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px;
+    display:grid;grid-template-columns:1fr;gap:20px;
   }
   .feat-card{
     background:var(--surface);border:1px solid var(--surface-high);
-    border-radius:16px;padding:34px 28px;
+    border-radius:16px;padding:28px 22px;
   }
   .feat-icon{font-size:1.6rem;margin-bottom:18px;}
   .feat-card h3{font-size:1rem;font-family:inherit;margin-bottom:12px;}
@@ -174,20 +175,18 @@
     background:linear-gradient(160deg, var(--surface-variant), var(--surface));
     border:1px solid var(--surface-high);
     border-radius:20px;
-    padding:60px 48px;
+    padding:44px 28px;
     text-align:center;
   }
-  .download-note{color:var(--text-muted);font-size:.8rem;margin-top:32px;max-width:480px;margin-left:auto;margin-right:auto;}
+  .download-note{color:var(--text-muted);font-size:.8rem;margin-top:28px;}
 
   /* ---------- Secret code ---------- */
   .vault{
     background:radial-gradient(ellipse at 50% 0%, rgba(201,162,75,.08), transparent 60%), var(--surface);
     border:1px solid rgba(201,162,75,.4);
     border-radius:20px;
-    padding:60px 40px;
+    padding:44px 26px;
     text-align:center;
-    max-width:480px;
-    margin:0 auto;
   }
   .vault-icon{font-size:2rem;margin-bottom:18px;}
   .code-inputs{display:flex;gap:14px;justify-content:center;margin:32px 0 18px;}
@@ -218,28 +217,11 @@
 
   footer{
     text-align:center;
-    padding:72px 24px 96px;
+    padding:56px 24px 72px;
     color:var(--text-muted);
     font-size:.82rem;
   }
   footer .rule{margin:0 auto 28px;}
-
-  @media (max-width:640px){
-    .wrap{padding-left:22px;padding-right:22px;}
-    section{padding-top:80px;padding-bottom:80px;}
-    .hero{padding:100px 22px 72px;}
-    .cta-row{flex-direction:column;align-items:stretch;}
-    .section-lede{margin-bottom:40px;}
-    .rule{margin:18px 0 36px;}
-    .story p{margin:0 0 20px;}
-    .char-grid{gap:20px;}
-    .char-card{padding:28px 20px;}
-    .feat-grid{gap:20px;}
-    .feat-card{padding:28px 22px;}
-    .download-box{padding:44px 28px;}
-    .vault{padding:44px 26px;}
-    footer{padding:56px 24px 72px;}
-  }
 </style>
 </head>
 <body>
@@ -402,7 +384,7 @@
   const grid = document.getElementById('charGrid');
   grid.innerHTML = characters.map(c => `
     <div class="char-card">
-      <img class="char-photo" src="assets/characters/${c.img.replace('.png', '-thumb.png')}" alt="${c.name}" loading="lazy">
+      <img class="char-photo" src="assets/characters/${c.img.replace('.png', '-thumb.png')}" alt="${c.name}">
       <div class="char-name">${c.name}</div>
       <div class="char-role">${c.role}</div>
       <div class="char-bio">${c.bio}</div>
