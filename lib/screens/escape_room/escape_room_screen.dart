@@ -40,9 +40,11 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
 
   _Stage _stage = _Stage.cifrario;
 
-  double _shift = 0;
+  int _shift = 0;
+  String? _decodedAttempt;
+  String? _cifrarioErrore;
   bool _hintVisible = false;
-  int _tentativiRotazione = 0;
+  int _tentativiDecifra = 0;
 
   String _input = '';
   String? _errore;
@@ -63,8 +65,7 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
     super.dispose();
   }
 
-  String get _decodedPreview {
-    final shift = _shift.round();
+  String _decode(int shift) {
     final buffer = StringBuffer();
     for (final unit in _cipherText.codeUnits) {
       if (unit == 32) {
@@ -78,18 +79,36 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
     return buffer.toString();
   }
 
-  bool get _cifrarioRisolto => _decodedPreview == _targetPlaintext;
-
-  void _onShiftChanged(double value) {
+  void _changeShift(int delta) {
     setState(() {
-      _shift = value;
-      _tentativiRotazione++;
+      _shift = (_shift + delta) % 26;
+      if (_shift < 0) _shift += 26;
+      // Cambiare rotazione invalida il tentativo precedente: bisogna
+      // decifrare di nuovo per vedere il risultato aggiornato, niente
+      // anteprima automatica che regali la soluzione mentre si scorre.
+      _decodedAttempt = null;
+      _cifrarioErrore = null;
+    });
+  }
+
+  void _decodeAttempt() {
+    setState(() {
+      _decodedAttempt = _decode(_shift);
+      _tentativiDecifra++;
+      _cifrarioErrore = null;
     });
   }
 
   void _confirmCifrario() {
-    if (!_cifrarioRisolto) return;
-    setState(() => _stage = _Stage.codice);
+    if (_decodedAttempt == null) return;
+    if (_decodedAttempt == _targetPlaintext) {
+      setState(() => _stage = _Stage.codice);
+    } else {
+      _shakeController.forward(from: 0);
+      setState(() {
+        _cifrarioErrore = 'Non sembra italiano leggibile. Prova un\'altra rotazione.';
+      });
+    }
   }
 
   void _addDigit(String d) {
@@ -175,13 +194,16 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
               _Stage.cifrario => _CifrarioStage(
                   key: const ValueKey('cifrario'),
                   cipherText: _cipherText,
-                  decoded: _decodedPreview,
-                  risolto: _cifrarioRisolto,
                   shift: _shift,
-                  onShiftChanged: _onShiftChanged,
+                  decodedAttempt: _decodedAttempt,
+                  errore: _cifrarioErrore,
+                  shakeController: _shakeController,
+                  onShiftDown: () => _changeShift(-1),
+                  onShiftUp: () => _changeShift(1),
+                  onDecodeAttempt: _decodeAttempt,
                   onContinua: _confirmCifrario,
                   hintVisible: _hintVisible,
-                  showHintButton: _tentativiRotazione > 6,
+                  showHintButton: _tentativiDecifra > 8,
                   onToggleHint: () => setState(() => _hintVisible = !_hintVisible),
                 ),
               _Stage.codice => _CodiceStage(
@@ -203,13 +225,19 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
   }
 }
 
-/// Fase 1: la ghiera del cifrario di Cesare.
+/// Fase 1: la ghiera del cifrario di Cesare. Niente anteprima in tempo
+/// reale: la rotazione si imposta a scatti e va decifrata esplicitamente,
+/// e il risultato non si colora mai da solo — tocca al giocatore leggerlo
+/// e giudicare se è italiano corretto prima di confermarlo.
 class _CifrarioStage extends StatelessWidget {
   final String cipherText;
-  final String decoded;
-  final bool risolto;
-  final double shift;
-  final ValueChanged<double> onShiftChanged;
+  final int shift;
+  final String? decodedAttempt;
+  final String? errore;
+  final AnimationController shakeController;
+  final VoidCallback onShiftDown;
+  final VoidCallback onShiftUp;
+  final VoidCallback onDecodeAttempt;
   final VoidCallback onContinua;
   final bool hintVisible;
   final bool showHintButton;
@@ -218,10 +246,13 @@ class _CifrarioStage extends StatelessWidget {
   const _CifrarioStage({
     super.key,
     required this.cipherText,
-    required this.decoded,
-    required this.risolto,
     required this.shift,
-    required this.onShiftChanged,
+    required this.decodedAttempt,
+    required this.errore,
+    required this.shakeController,
+    required this.onShiftDown,
+    required this.onShiftUp,
+    required this.onDecodeAttempt,
     required this.onContinua,
     required this.hintVisible,
     required this.showHintButton,
@@ -239,8 +270,8 @@ class _CifrarioStage extends StatelessWidget {
           'Sofia riconosce l\'incisione sul retro della fibula: non è '
           'decorazione, è un cifrario a rotazione — lo stesso usato dai '
           'trafficanti di reperti per nascondere le coordinate degli scavi. '
-          'Ruota la ghiera finché le lettere non tornano a formare parole '
-          'italiane.',
+          'Imposta una rotazione, decifra, e leggi tu stessa se il '
+          'risultato ha senso: la ghiera non te lo dirà da sola.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 20),
@@ -267,68 +298,93 @@ class _CifrarioStage extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-          decoration: BoxDecoration(
-            color: risolto
-                ? AppColors.trustHigh.withValues(alpha: 0.15)
-                : AppColors.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: risolto ? AppColors.trustHigh : AppColors.accentGold.withValues(alpha: 0.4),
-              width: risolto ? 1.6 : 1,
-            ),
-          ),
-          child: Column(
-            children: [
-              Text('DECIFRATO',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: risolto ? AppColors.trustHigh : AppColors.accentGold,
-                      fontSize: 11,
-                      letterSpacing: 1.5)),
-              const SizedBox(height: 8),
-              Text(
-                decoded,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontFamily: 'monospace',
-                    letterSpacing: 2,
-                    color: risolto ? AppColors.trustHigh : AppColors.textPrimary),
-              ),
-            ],
-          ),
-        ),
         const SizedBox(height: 20),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Rotazione', style: Theme.of(context).textTheme.bodyMedium),
-            Text('${shift.round()}',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(color: AppColors.accentGold)),
+            IconButton.filledTonal(
+              onPressed: onShiftDown,
+              icon: const Icon(Icons.remove),
+              tooltip: 'Riduci rotazione',
+            ),
+            SizedBox(
+              width: 96,
+              child: Column(
+                children: [
+                  Text('ROTAZIONE',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textMuted, fontSize: 10, letterSpacing: 1.5)),
+                  Text('$shift',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineMedium
+                          ?.copyWith(color: AppColors.accentGold)),
+                ],
+              ),
+            ),
+            IconButton.filledTonal(
+              onPressed: onShiftUp,
+              icon: const Icon(Icons.add),
+              tooltip: 'Aumenta rotazione',
+            ),
           ],
         ),
-        SliderTheme(
-          data: SliderTheme.of(context).copyWith(
-            activeTrackColor: AppColors.accentGold,
-            inactiveTrackColor: AppColors.surfaceHigh,
-            thumbColor: AppColors.accentAmber,
-            overlayColor: AppColors.accentGold.withValues(alpha: 0.2),
-          ),
-          child: Slider(
-            value: shift,
-            min: 0,
-            max: 25,
-            divisions: 25,
-            onChanged: onShiftChanged,
+        const SizedBox(height: 16),
+        OutlinedButton.icon(
+          onPressed: onDecodeAttempt,
+          icon: const Icon(Icons.sync_outlined),
+          label: const Text('DECIFRA CON QUESTA ROTAZIONE'),
+        ),
+        const SizedBox(height: 16),
+        AnimatedBuilder(
+          animation: shakeController,
+          builder: (context, child) {
+            final t = shakeController.value;
+            final dx = (t == 0 || t == 1) ? 0.0 : (8 * (0.5 - (t * 4).remainder(1)).sign);
+            return Transform.translate(offset: Offset(dx, 0), child: child);
+          },
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: errore != null
+                    ? AppColors.accentBlood
+                    : AppColors.accentGold.withValues(alpha: 0.4),
+              ),
+            ),
+            child: Column(
+              children: [
+                Text('DECIFRATO',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.accentGold, fontSize: 11, letterSpacing: 1.5)),
+                const SizedBox(height: 8),
+                Text(
+                  decodedAttempt ?? '— premi "decifra" per vedere il risultato —',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontFamily: 'monospace',
+                      letterSpacing: 2,
+                      color: decodedAttempt == null
+                          ? AppColors.textMuted
+                          : AppColors.textPrimary),
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 8),
+        SizedBox(
+          height: 20,
+          child: Text(
+            errore ?? '',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.accentBlood, fontSize: 13),
+          ),
+        ),
         if (showHintButton) ...[
           Center(
             child: TextButton.icon(
@@ -352,9 +408,9 @@ class _CifrarioStage extends StatelessWidget {
         ],
         const SizedBox(height: 8),
         ElevatedButton.icon(
-          onPressed: risolto ? onContinua : null,
+          onPressed: decodedAttempt == null ? null : onContinua,
           icon: const Icon(Icons.check_circle_outline),
-          label: const Text('CONTINUA'),
+          label: const Text('QUESTA È LA FRASE GIUSTA'),
         ),
       ],
     );
