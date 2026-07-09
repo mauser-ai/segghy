@@ -9,16 +9,25 @@ import '../../core/widgets/return_to_menu_button.dart';
 import '../../core/widgets/scene_background.dart';
 import '../../providers/game_provider.dart';
 
+/// Un simbolo del rebus: un'emoji incisa sulla fibula, una didascalia
+/// evocativa (non la parola diretta) e la parola italiana a cui allude —
+/// la cui prima lettera è la lettera nascosta.
+class _RebusSymbol {
+  final String icon;
+  final String caption;
+  final String word;
+  const _RebusSymbol({required this.icon, required this.caption, required this.word});
+}
+
 /// Ultimo enigma del gioco, sbloccato solo dopo aver individuato la vera
 /// colpevole. In stile "escape room" a due fasi:
 ///
-/// 1. Un cifrario di Cesare inciso sul retro della fibula: la prima parola
-///    cifrata ha solo due lettere ("UX"). Il giocatore deve riconoscere a
-///    quale parola italiana breve corrisponda più probabilmente — non c'è
-///    una rotazione da scorrere meccanicamente, la sua ipotesi determina
-///    la rotazione applicata a tutto il messaggio, che va poi giudicato
-///    (leggibile o no) senza alcun indizio visivo automatico.
-/// 2. Una volta decifrata la frase, il giocatore compone il codice a 4
+/// 1. Un rebus per immagini inciso sulla fibula: ogni lettera del
+///    messaggio nascosto è stata sostituita con un'emoji legata al caso.
+///    Una legenda descrive cosa raffigura ciascun simbolo, ma solo con un
+///    indizio — tocca al giocatore indovinare la parola e prenderne la
+///    prima lettera, per ogni simbolo, per ricostruire la frase.
+/// 2. Una volta ricostruita la frase, il giocatore compone il codice a 4
 ///    cifre che vi è nascosto sul tastierino numerico.
 class EscapeRoomScreen extends StatefulWidget {
   const EscapeRoomScreen({super.key});
@@ -31,31 +40,66 @@ enum _Stage { cifrario, codice, rivelazione }
 
 class _EscapeRoomScreenState extends State<EscapeRoomScreen>
     with SingleTickerProviderStateMixin {
-  // Cifrario di Cesare: il testo cifrato qui sotto, ruotato all'indietro di
-  // 12 posizioni, torna a essere "IL FIUME SUSSURRA QUATTRO QUATTRO DUE
-  // DUE". La prima parola cifrata "UX" ha lo stesso scarto alfabetico di
-  // "IL" (I→L = +3 posizioni, come U→X): un giocatore che riconosce "IL"
-  // come parola breve plausibile può risalire alla rotazione da solo,
-  // senza bisogno di provare tutte le 26 combinazioni.
-  static const String _cipherText =
-      'UX RUGYQ EGEEGDDM CGMFFDA CGMFFDA PGQ PGQ';
   static const String _targetPlaintext =
       'IL FIUME SUSSURRA QUATTRO QUATTRO DUE DUE';
   static const String _codice = '4422';
 
-  // Parole italiane brevi plausibili per la prima parola cifrata: solo una
-  // (IL) produce una rotazione che rende leggibile l'intero messaggio.
-  static const List<String> _wordCandidates = [
-    'IL', 'LO', 'LA', 'UN', 'DI', 'DA', 'SU', 'TI', 'MI', 'SI',
-  ];
+  // Alfabeto del rebus: un simbolo per ogni lettera distinta del messaggio,
+  // in ordine di prima apparizione. La legenda mostrata al giocatore dà
+  // solo la didascalia (non la "word"): la parola va indovinata.
+  static const Map<String, _RebusSymbol> _rebusAlphabet = {
+    'I': _RebusSymbol(
+        icon: '🔍',
+        caption: 'Quel che si raccoglie lungo il fiume per risolvere il caso.',
+        word: 'INDIZIO'),
+    'L': _RebusSymbol(
+        icon: '🔒',
+        caption: 'Protegge un segreto, finché qualcuno non lo forza.',
+        word: 'LUCCHETTO'),
+    'F': _RebusSymbol(
+        icon: '🌊',
+        caption: 'Scorre silenzioso sotto Golasecca.',
+        word: 'FIUME'),
+    'U': _RebusSymbol(
+        icon: '🍇', caption: 'Un frutto che cresce a grappoli.', word: 'UVA'),
+    'M': _RebusSymbol(
+        icon: '🐱',
+        caption: 'Il cucciolo che Segghy accudisce ogni giorno.',
+        word: 'MICIO'),
+    'E': _RebusSymbol(
+        icon: '🌿',
+        caption: 'Cresce spontanea lungo i sentieri del fiume.',
+        word: 'ERBA'),
+    'S': _RebusSymbol(
+        icon: '⭐', caption: 'Brilla nel cielo la notte della festa.', word: 'STELLA'),
+    'R': _RebusSymbol(
+        icon: '🏞️', caption: 'La sponda dove tutto è cominciato.', word: 'RIVA'),
+    'A': _RebusSymbol(
+        icon: '🐝', caption: 'Un piccolo insetto operoso.', word: 'APE'),
+    'Q': _RebusSymbol(
+        icon: '📓',
+        caption: 'Dove si annotano indizi e sospetti.',
+        word: 'QUADERNO'),
+    'T': _RebusSymbol(
+        icon: '📱',
+        caption: 'L\'oggetto che Kledian custodiva nella sua officina.',
+        word: 'TELEFONO'),
+    'O': _RebusSymbol(
+        icon: '⏰',
+        caption: 'Segna l\'ora esatta della festa fatale.',
+        word: 'OROLOGIO'),
+    'D': _RebusSymbol(
+        icon: '📄',
+        caption: 'Un foglio che racconta i fatti, nero su bianco.',
+        word: 'DOCUMENTO'),
+  };
+
+  static List<String> get _rebusWords => _targetPlaintext.split(' ').map((word) {
+        return word.split('').map((ch) => _rebusAlphabet[ch]!.icon).join();
+      }).toList();
 
   _Stage _stage = _Stage.cifrario;
-
-  String? _selectedGuess;
-  String? _decodedAttempt;
-  String? _cifrarioErrore;
   bool _hintVisible = false;
-  int _tentativiDecifra = 0;
 
   String _input = '';
   String? _errore;
@@ -74,45 +118,6 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
   void dispose() {
     _shakeController.dispose();
     super.dispose();
-  }
-
-  String _decode(int shift) {
-    final buffer = StringBuffer();
-    for (final unit in _cipherText.codeUnits) {
-      if (unit == 32) {
-        buffer.writeCharCode(32);
-        continue;
-      }
-      final idx = unit - 65;
-      final decoded = (idx - shift) % 26;
-      buffer.writeCharCode((decoded < 0 ? decoded + 26 : decoded) + 65);
-    }
-    return buffer.toString();
-  }
-
-  void _tryGuess(String guess) {
-    // La rotazione si deduce dalla prima lettera cifrata ('U') confrontata
-    // con la prima lettera della parola ipotizzata: è la scelta della
-    // parola, non un numero scorso a caso, a determinare il risultato.
-    final shift = (('U'.codeUnitAt(0) - 65) - (guess.codeUnitAt(0) - 65)) % 26;
-    setState(() {
-      _selectedGuess = guess;
-      _decodedAttempt = _decode(shift < 0 ? shift + 26 : shift);
-      _tentativiDecifra++;
-      _cifrarioErrore = null;
-    });
-  }
-
-  void _confirmCifrario() {
-    if (_decodedAttempt == null) return;
-    if (_decodedAttempt == _targetPlaintext) {
-      setState(() => _stage = _Stage.codice);
-    } else {
-      _shakeController.forward(from: 0);
-      setState(() {
-        _cifrarioErrore = 'Non sembra italiano leggibile. Prova un\'altra parola.';
-      });
-    }
   }
 
   void _addDigit(String d) {
@@ -197,16 +202,10 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
             child: switch (_stage) {
               _Stage.cifrario => _CifrarioStage(
                   key: const ValueKey('cifrario'),
-                  cipherText: _cipherText,
-                  candidates: _wordCandidates,
-                  selectedGuess: _selectedGuess,
-                  decodedAttempt: _decodedAttempt,
-                  errore: _cifrarioErrore,
-                  shakeController: _shakeController,
-                  onGuess: _tryGuess,
-                  onContinua: _confirmCifrario,
+                  rebusWords: _rebusWords,
+                  legend: _rebusAlphabet,
+                  onContinua: () => setState(() => _stage = _Stage.codice),
                   hintVisible: _hintVisible,
-                  showHintButton: _tentativiDecifra > 5,
                   onToggleHint: () => setState(() => _hintVisible = !_hintVisible),
                 ),
               _Stage.codice => _CodiceStage(
@@ -228,62 +227,48 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
   }
 }
 
-/// Fase 1: crittanalisi della fibula. Niente rotazione da scorrere: la
-/// prima parola cifrata ha solo due lettere, e la scelta di quale parola
-/// italiana breve rappresenti — un ragionamento linguistico, non un
-/// tentativo meccanico — determina la rotazione applicata a tutto il
-/// messaggio. Il risultato non si colora mai da solo: tocca al giocatore
-/// leggerlo e giudicare se è italiano corretto prima di confermarlo.
+/// Fase 1: il rebus della fibula. Ogni lettera del messaggio è
+/// un'immagine; la legenda descrive solo cosa raffigura ciascun simbolo,
+/// non la parola né la lettera — tocca al giocatore indovinare la parola
+/// e prenderne la prima lettera, per ogni simbolo, per ricostruire la
+/// frase da solo, leggendola mentalmente prima di proseguire.
 class _CifrarioStage extends StatelessWidget {
-  final String cipherText;
-  final List<String> candidates;
-  final String? selectedGuess;
-  final String? decodedAttempt;
-  final String? errore;
-  final AnimationController shakeController;
-  final ValueChanged<String> onGuess;
+  final List<String> rebusWords;
+  final Map<String, _RebusSymbol> legend;
   final VoidCallback onContinua;
   final bool hintVisible;
-  final bool showHintButton;
   final VoidCallback onToggleHint;
 
   const _CifrarioStage({
     super.key,
-    required this.cipherText,
-    required this.candidates,
-    required this.selectedGuess,
-    required this.decodedAttempt,
-    required this.errore,
-    required this.shakeController,
-    required this.onGuess,
+    required this.rebusWords,
+    required this.legend,
     required this.onContinua,
     required this.hintVisible,
-    required this.showHintButton,
     required this.onToggleHint,
   });
 
   @override
   Widget build(BuildContext context) {
-    final firstCipherWord = cipherText.split(' ').first;
+    final hintEntry = legend.entries.first;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Il cifrario della fibula', style: Theme.of(context).textTheme.titleLarge),
+        Text('Il rebus della fibula', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
         Text(
-          'Sofia riconosce l\'incisione sul retro della fibula: non è '
-          'decorazione, è un cifrario a rotazione — lo stesso usato dai '
-          'trafficanti di reperti per nascondere le coordinate degli scavi. '
-          'La prima parola, "$firstCipherWord", ha solo due lettere: a '
-          'quale parola italiana breve potrebbe corrispondere? La tua '
-          'ipotesi decide come viene decifrato tutto il resto — e solo '
-          'leggendolo saprai se hai indovinato.',
+          'Sofia riconosce l\'incisione sul retro della fibula: non sono '
+          'decorazioni, sono simboli — ognuno al posto di una lettera. '
+          'La legenda sotto ti dice solo cosa raffigura ogni simbolo: sta '
+          'a te capire a quale parola italiana corrisponde, e prenderne '
+          'la prima lettera. Nessuno ti dirà se hai letto giusto: solo tu '
+          'puoi giudicarlo.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 20),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
           decoration: BoxDecoration(
             color: AppColors.surfaceHigh,
             borderRadius: BorderRadius.circular(14),
@@ -291,124 +276,85 @@ class _CifrarioStage extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Text('TESTO INCISO',
+              Text('INCISIONE SULLA FIBULA',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textMuted, fontSize: 11, letterSpacing: 1.5)),
-              const SizedBox(height: 8),
-              Text(
-                cipherText,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontFamily: 'monospace', letterSpacing: 2, color: AppColors.textSecondary),
+              const SizedBox(height: 12),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 18,
+                runSpacing: 12,
+                children: rebusWords
+                    .map((word) => Text(word, style: const TextStyle(fontSize: 26)))
+                    .toList(),
               ),
             ],
           ),
         ),
         const SizedBox(height: 20),
-        Text('"$firstCipherWord" POTREBBE ESSERE...',
+        Text('LEGENDA',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textMuted, fontSize: 11, letterSpacing: 1.5)),
         const SizedBox(height: 10),
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 10,
-          runSpacing: 10,
-          children: candidates.map((word) {
-            final selected = selectedGuess == word;
-            return ChoiceChip(
-              label: Text(word),
-              selected: selected,
-              onSelected: (_) => onGuess(word),
-              selectedColor: AppColors.accentGold.withValues(alpha: 0.22),
-              backgroundColor: AppColors.surfaceHigh,
-              side: BorderSide(
-                color: selected
-                    ? AppColors.accentGold
-                    : AppColors.surfaceVariant,
-              ),
-              labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: selected ? AppColors.accentGold : AppColors.textPrimary,
-                  fontWeight: selected ? FontWeight.bold : FontWeight.normal),
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 20),
-        AnimatedBuilder(
-          animation: shakeController,
-          builder: (context, child) {
-            final t = shakeController.value;
-            final dx = (t == 0 || t == 1) ? 0.0 : (8 * (0.5 - (t * 4).remainder(1)).sign);
-            return Transform.translate(offset: Offset(dx, 0), child: child);
-          },
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: errore != null
-                    ? AppColors.accentBlood
-                    : AppColors.accentGold.withValues(alpha: 0.4),
-              ),
-            ),
-            child: Column(
-              children: [
-                Text('DECIFRATO',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.accentGold, fontSize: 11, letterSpacing: 1.5)),
-                const SizedBox(height: 8),
-                Text(
-                  decodedAttempt ?? '— scegli una parola qui sopra per vedere il risultato —',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontFamily: 'monospace',
-                      letterSpacing: 2,
-                      color: decodedAttempt == null
-                          ? AppColors.textMuted
-                          : AppColors.textPrimary),
-                ),
-              ],
-            ),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.accentGold.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            children: legend.values
+                .map((symbol) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(symbol.icon, style: const TextStyle(fontSize: 20)),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Text(
+                              symbol.caption,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(color: AppColors.textSecondary),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ))
+                .toList(),
           ),
         ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 20,
-          child: Text(
-            errore ?? '',
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.accentBlood, fontSize: 13),
+        const SizedBox(height: 16),
+        Center(
+          child: TextButton.icon(
+            onPressed: onToggleHint,
+            icon: const Icon(Icons.lightbulb_outline, size: 18),
+            label: Text(hintVisible ? 'Nascondi esempio' : 'Come si legge un simbolo?'),
           ),
         ),
-        if (showHintButton) ...[
-          Center(
-            child: TextButton.icon(
-              onPressed: onToggleHint,
-              icon: const Icon(Icons.lightbulb_outline, size: 18),
-              label: Text(hintVisible ? 'Nascondi suggerimento' : 'Suggerimento'),
+        if (hintVisible)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              '${hintEntry.value.icon}  →  "${hintEntry.value.word}"  →  '
+              'la lettera nascosta è la prima: "${hintEntry.key}".',
+              textAlign: TextAlign.center,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: AppColors.accentGold),
             ),
           ),
-          if (hintVisible)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                'È l\'articolo determinativo maschile singolare più comune '
-                'della lingua italiana.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: AppColors.accentGold),
-              ),
-            ),
-        ],
         const SizedBox(height: 8),
         ElevatedButton.icon(
-          onPressed: decodedAttempt == null ? null : onContinua,
+          onPressed: onContinua,
           icon: const Icon(Icons.check_circle_outline),
-          label: const Text('QUESTA È LA FRASE GIUSTA'),
+          label: const Text('HO LETTO LA FRASE, PROSEGUI'),
         ),
       ],
     );
