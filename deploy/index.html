@@ -41,7 +41,7 @@
   a{color:var(--gold);}
   img{max-width:100%;display:block;}
   .wrap{max-width:1080px;margin:0 auto;padding:0 28px;}
-  section{padding:96px 0;position:relative;}
+  section{padding:128px 0;position:relative;}
 
   /* ---------- Hero ---------- */
   .hero{
@@ -122,17 +122,17 @@
     margin-bottom:12px;
   }
   .section-title{font-size:clamp(1.6rem,4vw,2.2rem);}
-  .section-lede{color:var(--text-secondary);max-width:640px;margin-bottom:48px;}
+  .section-lede{color:var(--text-secondary);max-width:640px;margin-bottom:56px;}
   .rule{
     height:2px;width:56px;
     background:linear-gradient(90deg, var(--gold), transparent);
-    margin:18px 0 40px;
+    margin:22px 0 48px;
   }
 
   /* ---------- Story ---------- */
-  .story p{color:var(--text-secondary);max-width:720px;margin:0 0 22px;}
+  .story p{color:var(--text-secondary);max-width:720px;margin:0 0 26px;}
   .locations{
-    display:flex;flex-wrap:wrap;gap:12px;margin-top:36px;
+    display:flex;flex-wrap:wrap;gap:12px;margin-top:44px;
   }
   .chip{
     padding:9px 16px;border-radius:999px;
@@ -143,64 +143,56 @@
   /* ---------- Characters ---------- */
   .char-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(200px,1fr));
-    gap:24px;
+    grid-template-columns:repeat(auto-fill, minmax(220px,1fr));
+    gap:28px;
   }
   .char-card{
     background:linear-gradient(160deg, var(--surface-variant), var(--surface));
     border:1px solid var(--surface-high);
     border-radius:16px;
-    padding:24px 20px;
+    padding:32px 24px;
     text-align:center;
     position:relative;
   }
   .char-photo{
-    width:84px;height:84px;border-radius:50%;
+    width:108px;height:108px;border-radius:50%;
     object-fit:cover;object-position:center 20%;
-    margin:0 auto 16px;
+    margin:0 auto 20px;
     border:2px solid var(--surface-high);
     box-shadow:0 0 0 4px rgba(201,162,75,.08);
   }
-  .char-name{font-family:Georgia,serif;font-size:1.05rem;margin-bottom:5px;}
-  .char-role{color:var(--text-muted);font-size:.75rem;margin-bottom:14px;}
-  .char-bio{color:var(--text-secondary);font-size:.83rem;margin:0;}
-  .badge-suspect{
-    position:absolute;top:16px;right:16px;
-    background:rgba(138,46,46,.18);
-    border:1px solid var(--blood);
-    color:#e2a3a3;
-    font-size:.62rem;font-weight:700;letter-spacing:.5px;
-    padding:4px 9px;border-radius:999px;
-  }
+  .char-name{font-family:Georgia,serif;font-size:1.1rem;margin-bottom:6px;}
+  .char-role{color:var(--text-muted);font-size:.75rem;margin-bottom:16px;}
+  .char-bio{color:var(--text-secondary);font-size:.85rem;margin:0;line-height:1.6;}
 
   /* ---------- Features ---------- */
   .feat-grid{
-    display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px;
   }
   .feat-card{
     background:var(--surface);border:1px solid var(--surface-high);
-    border-radius:16px;padding:30px 26px;
+    border-radius:16px;padding:34px 28px;
   }
-  .feat-icon{font-size:1.6rem;margin-bottom:16px;}
-  .feat-card h3{font-size:1rem;font-family:inherit;margin-bottom:10px;}
-  .feat-card p{color:var(--text-secondary);font-size:.87rem;margin:0;}
+  .feat-icon{font-size:1.6rem;margin-bottom:18px;}
+  .feat-card h3{font-size:1rem;font-family:inherit;margin-bottom:12px;}
+  .feat-card p{color:var(--text-secondary);font-size:.87rem;margin:0;line-height:1.6;}
 
   /* ---------- Download ---------- */
   .download-box{
     background:linear-gradient(160deg, var(--surface-variant), var(--surface));
     border:1px solid var(--surface-high);
     border-radius:20px;
-    padding:52px 40px;
+    padding:60px 48px;
     text-align:center;
   }
-  .download-note{color:var(--text-muted);font-size:.8rem;margin-top:28px;max-width:480px;margin-left:auto;margin-right:auto;}
+  .download-note{color:var(--text-muted);font-size:.8rem;margin-top:32px;max-width:480px;margin-left:auto;margin-right:auto;}
 
   /* ---------- Secret code ---------- */
   .vault{
     background:radial-gradient(ellipse at 50% 0%, rgba(201,162,75,.08), transparent 60%), var(--surface);
     border:1px solid rgba(201,162,75,.4);
     border-radius:20px;
-    padding:52px 32px;
+    padding:60px 40px;
     text-align:center;
     max-width:480px;
     margin:0 auto;
@@ -234,21 +226,28 @@
 
   footer{
     text-align:center;
-    padding:64px 24px 88px;
+    padding:72px 24px 96px;
     color:var(--text-muted);
     font-size:.82rem;
   }
-  footer .rule{margin:0 auto 24px;}
+  footer .rule{margin:0 auto 28px;}
 
   @media (max-width:640px){
     .wrap{padding:0 22px;}
-    section{padding:72px 0;}
+    section{padding:80px 0;}
     .hero{padding:100px 22px 72px;}
     .cta-row{flex-direction:column;align-items:stretch;}
-    .char-grid{gap:18px;}
-    .feat-grid{gap:18px;}
-    .download-box{padding:40px 26px;}
-    .vault{padding:40px 24px;}
+    .section-lede{margin-bottom:40px;}
+    .rule{margin:18px 0 36px;}
+    .story p{margin:0 0 20px;}
+    .locations{margin-top:32px;}
+    .char-grid{gap:20px;}
+    .char-card{padding:28px 20px;}
+    .feat-grid{gap:20px;}
+    .feat-card{padding:28px 22px;}
+    .download-box{padding:44px 28px;}
+    .vault{padding:44px 26px;}
+    footer{padding:56px 24px 72px;}
   }
 </style>
 </head>
@@ -395,9 +394,9 @@
       bio:"Conosce Segghy da sempre. Vorrebbe proteggerla, ma non può dirle tutto quello che sa."},
     {name:"Kledian", role:"Meccanico", place:"Vergiate", img:"kledian.png",
       bio:"L'ultimo ad aver visto Mauro vivo. Nella sua officina custodisce un telefono che potrebbe cambiare tutto."},
-    {name:"Manuela", role:"Proprietaria del maneggio", place:"Somma Lombardo", img:"manuela.png", suspect:true,
+    {name:"Manuela", role:"Proprietaria del maneggio", place:"Somma Lombardo", img:"manuela.png",
       bio:"Una seconda madre per Segghy. Ma anche lei ha un passato in comune con la vittima."},
-    {name:"Sandra", role:"Barista", place:"Golasecca", img:"sandra.png", suspect:true,
+    {name:"Sandra", role:"Barista", place:"Golasecca", img:"sandra.png",
       bio:"Gentile, sorridente, sempre pronta ad ascoltare chiunque entri nel suo bar. Sa più di quanto lasci intendere."},
     {name:"Gaia", role:"Rifugio gattini", place:"Golasecca", img:"gaia.png",
       bio:"Gestisce un piccolo rifugio per gattini lungo il fiume, insieme alla sorella Anna."},
@@ -405,23 +404,22 @@
       bio:"Più silenziosa di Gaia, ma nota dettagli che a tutti sfuggono."},
     {name:"Sofia", role:"Studentessa di archeologia", place:"Arsago Seprio", img:"sofia.png",
       bio:"Appassionata di storia locale, è tra le prime a capire cosa nasconda davvero il caso."},
-    {name:"Adriano", role:"Ex socio della vittima", place:"Sesto Calende", img:"adriano.png", suspect:true,
+    {name:"Adriano", role:"Ex socio della vittima", place:"Sesto Calende", img:"adriano.png",
       bio:"Mauro gli ha rubato più di un affare. Ha tutte le ragioni per odiarlo."},
-    {name:"Cinzia", role:"Legata al maneggio", place:"Somma Lombardo", img:"cinzia.png", suspect:true,
+    {name:"Cinzia", role:"Legata al maneggio", place:"Somma Lombardo", img:"cinzia.png",
       bio:"Un tempo il maneggio era suo. Poi è arrivato Mauro."},
     {name:"Mauro", role:"Vittima", place:"Golasecca", img:"mauro.png",
       bio:"Un uomo con troppi segreti e troppi nemici. La sua morte è l'inizio di tutto."},
-    {name:"Moreno", role:"Guardiano", place:"Castelletto sopra Ticino", img:"moreno.png", suspect:true,
+    {name:"Moreno", role:"Guardiano", place:"Castelletto sopra Ticino", img:"moreno.png",
       bio:"Sorveglia le rive del fiume ogni notte. Quella notte, però, ha guardato altrove."},
-    {name:"Alessandra", role:"Restauratrice", place:"Arsago Seprio", img:"alessandra.png", suspect:true,
+    {name:"Alessandra", role:"Restauratrice", place:"Arsago Seprio", img:"alessandra.png",
       bio:"Esperta di reperti antichi, costretta a nascondere una verità scomoda."},
   ];
 
   const grid = document.getElementById('charGrid');
   grid.innerHTML = characters.map(c => `
     <div class="char-card">
-      ${c.suspect ? '<span class="badge-suspect">SOSPETTATO</span>' : ''}
-      <img class="char-photo" src="assets/characters/${c.img}" alt="${c.name}" loading="lazy">
+      <img class="char-photo" src="assets/characters/${c.img.replace('.png', '-thumb.png')}" alt="${c.name}" loading="lazy">
       <div class="char-name">${c.name}</div>
       <div class="char-role">${c.role} · ${c.place}</div>
       <div class="char-bio">${c.bio}</div>
