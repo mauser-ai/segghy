@@ -140,7 +140,7 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
     } else {
       _shakeController.forward(from: 0);
       setState(() {
-        _errore = 'Combinazione errata. Rileggi bene la frase decifrata.';
+        _errore = 'Combinazione errata. Ripensa al rebus: forse una lettera non torna.';
         _input = '';
       });
     }
@@ -210,12 +210,12 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
                 ),
               _Stage.codice => _CodiceStage(
                   key: const ValueKey('codice'),
-                  fraseDecifrata: _targetPlaintext,
                   input: _input,
                   errore: _errore,
                   shakeController: _shakeController,
                   onDigit: _addDigit,
                   onBackspace: _removeDigit,
+                  onRivediRebus: () => setState(() => _stage = _Stage.cifrario),
                 ),
               _Stage.rivelazione =>
                 _CodeReveal(key: const ValueKey('reveal'), code: _codice),
@@ -361,23 +361,26 @@ class _CifrarioStage extends StatelessWidget {
   }
 }
 
-/// Fase 2: comporre il codice trovato nella frase decifrata.
+/// Fase 2: comporre il codice trovato nella frase nascosta nel rebus. La
+/// frase NON viene ripetuta qui: chi arriva a questa schermata deve
+/// averla già decifrata e tenuta a mente (o annotata), altrimenti il
+/// rebus della fase precedente sarebbe stato inutile.
 class _CodiceStage extends StatelessWidget {
-  final String fraseDecifrata;
   final String input;
   final String? errore;
   final AnimationController shakeController;
   final ValueChanged<String> onDigit;
   final VoidCallback onBackspace;
+  final VoidCallback onRivediRebus;
 
   const _CodiceStage({
     super.key,
-    required this.fraseDecifrata,
     required this.input,
     required this.errore,
     required this.shakeController,
     required this.onDigit,
     required this.onBackspace,
+    required this.onRivediRebus,
   });
 
   @override
@@ -388,27 +391,20 @@ class _CodiceStage extends StatelessWidget {
         Text('Componi il codice', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
         Text(
-          'Il cifrario è decifrato. Ora componi sul tastierino le quattro '
-          'cifre nascoste nella frase.',
+          'Ora componi sul tastierino le quattro cifre nascoste nella '
+          'frase che hai appena ricostruito dal rebus.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
-        const SizedBox(height: 16),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-          decoration: BoxDecoration(
-            color: AppColors.trustHigh.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.trustHigh.withValues(alpha: 0.5)),
-          ),
-          child: Text(
-            fraseDecifrata,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontFamily: 'monospace', letterSpacing: 1.5, color: AppColors.trustHigh),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: onRivediRebus,
+            icon: const Icon(Icons.image_search_outlined, size: 18),
+            label: const Text('Rivedi i simboli sulla fibula'),
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 8),
         AnimatedBuilder(
           animation: shakeController,
           builder: (context, child) {
