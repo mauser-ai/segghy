@@ -1,0 +1,17 @@
+# Forza il tipo MIME corretto per l'APK: alcuni host servono i file .apk
+# con un Content-Type generico (o addirittura come application/zip, dato
+# che il formato APK è tecnicamente uno ZIP), causando il download come
+# "SegghysWood.zip" invece di "SegghysWood.apk".
+<IfModule mod_mime.c>
+  AddType application/vnd.android.package-archive .apk
+</IfModule>
+
+# Forza esplicitamente anche il nome del file scaricato, così anche se il
+# server ha un Content-Type sbagliato a monte, il browser salva comunque
+# con estensione .apk corretta.
+<IfModule mod_headers.c>
+  <FilesMatch "\.apk$">
+    Header set Content-Type "application/vnd.android.package-archive"
+    Header set Content-Disposition "attachment; filename=SegghysWood.apk"
+  </FilesMatch>
+</IfModule>
