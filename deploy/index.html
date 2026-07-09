@@ -131,14 +131,6 @@
 
   /* ---------- Story ---------- */
   .story p{color:var(--text-secondary);max-width:720px;margin:0 0 26px;}
-  .locations{
-    display:flex;flex-wrap:wrap;gap:12px;margin-top:44px;
-  }
-  .chip{
-    padding:9px 16px;border-radius:999px;
-    background:var(--surface);border:1px solid var(--surface-high);
-    color:var(--text-secondary);font-size:.85rem;
-  }
 
   /* ---------- Characters ---------- */
   .char-grid{
@@ -240,7 +232,6 @@
     .section-lede{margin-bottom:40px;}
     .rule{margin:18px 0 36px;}
     .story p{margin:0 0 20px;}
-    .locations{margin-top:32px;}
     .char-grid{gap:20px;}
     .char-card{padding:28px 20px;}
     .feat-grid{gap:20px;}
@@ -288,14 +279,6 @@
       decidere di chi fidarsi — e scoprire chi ha davvero voluto incastrarla,
       prima che sia troppo tardi.
     </p>
-    <div class="locations">
-      <span class="chip">Golasecca</span>
-      <span class="chip">Sesto Calende</span>
-      <span class="chip">Somma Lombardo</span>
-      <span class="chip">Vergiate</span>
-      <span class="chip">Castelletto sopra Ticino</span>
-      <span class="chip">Arsago Seprio</span>
-    </div>
   </section>
 
   <section class="wrap" id="personaggi">
@@ -386,33 +369,33 @@
 
 <script>
   const characters = [
-    {name:"Segghy", role:"Protagonista", place:"Golasecca", img:"segghy.png",
+    {name:"Segghy", role:"Protagonista", img:"segghy.png",
       bio:"Cresciuta tra le stradine di Golasecca, non si separa mai dal suo ciondolo a forma di cavallo."},
-    {name:"Riccardo", role:"Amico tecnico", place:"Golasecca", img:"riccardo.png",
+    {name:"Riccardo", role:"Amico tecnico", img:"riccardo.png",
       bio:"Amico d'infanzia di Segghy. La aiuta a incrociare indizi e a costruire la mappa dell'indagine."},
-    {name:"Matteo", role:"Carabiniere", place:"Sesto Calende", img:"matteo.png",
+    {name:"Matteo", role:"Carabiniere", img:"matteo.png",
       bio:"Conosce Segghy da sempre. Vorrebbe proteggerla, ma non può dirle tutto quello che sa."},
-    {name:"Kledian", role:"Meccanico", place:"Vergiate", img:"kledian.png",
+    {name:"Kledian", role:"Meccanico", img:"kledian.png",
       bio:"L'ultimo ad aver visto Mauro vivo. Nella sua officina custodisce un telefono che potrebbe cambiare tutto."},
-    {name:"Manuela", role:"Proprietaria del maneggio", place:"Somma Lombardo", img:"manuela.png",
+    {name:"Manuela", role:"Proprietaria del maneggio", img:"manuela.png",
       bio:"Una seconda madre per Segghy. Ma anche lei ha un passato in comune con la vittima."},
-    {name:"Sandra", role:"Barista", place:"Golasecca", img:"sandra.png",
+    {name:"Sandra", role:"Barista", img:"sandra.png",
       bio:"Gentile, sorridente, sempre pronta ad ascoltare chiunque entri nel suo bar. Sa più di quanto lasci intendere."},
-    {name:"Gaia", role:"Rifugio gattini", place:"Golasecca", img:"gaia.png",
+    {name:"Gaia", role:"Rifugio gattini", img:"gaia.png",
       bio:"Gestisce un piccolo rifugio per gattini lungo il fiume, insieme alla sorella Anna."},
-    {name:"Anna", role:"Rifugio gattini", place:"Golasecca", img:"anna.png",
+    {name:"Anna", role:"Rifugio gattini", img:"anna.png",
       bio:"Più silenziosa di Gaia, ma nota dettagli che a tutti sfuggono."},
-    {name:"Sofia", role:"Studentessa di archeologia", place:"Arsago Seprio", img:"sofia.png",
+    {name:"Sofia", role:"Studentessa di archeologia", img:"sofia.png",
       bio:"Appassionata di storia locale, è tra le prime a capire cosa nasconda davvero il caso."},
-    {name:"Adriano", role:"Ex socio della vittima", place:"Sesto Calende", img:"adriano.png",
+    {name:"Adriano", role:"Ex socio della vittima", img:"adriano.png",
       bio:"Mauro gli ha rubato più di un affare. Ha tutte le ragioni per odiarlo."},
-    {name:"Cinzia", role:"Legata al maneggio", place:"Somma Lombardo", img:"cinzia.png",
+    {name:"Cinzia", role:"Legata al maneggio", img:"cinzia.png",
       bio:"Un tempo il maneggio era suo. Poi è arrivato Mauro."},
-    {name:"Mauro", role:"Vittima", place:"Golasecca", img:"mauro.png",
+    {name:"Mauro", role:"Vittima", img:"mauro.png",
       bio:"Un uomo con troppi segreti e troppi nemici. La sua morte è l'inizio di tutto."},
-    {name:"Moreno", role:"Guardiano", place:"Castelletto sopra Ticino", img:"moreno.png",
+    {name:"Moreno", role:"Guardiano", img:"moreno.png",
       bio:"Sorveglia le rive del fiume ogni notte. Quella notte, però, ha guardato altrove."},
-    {name:"Alessandra", role:"Restauratrice", place:"Arsago Seprio", img:"alessandra.png",
+    {name:"Alessandra", role:"Restauratrice", img:"alessandra.png",
       bio:"Esperta di reperti antichi, costretta a nascondere una verità scomoda."},
   ];
 
@@ -421,7 +404,7 @@
     <div class="char-card">
       <img class="char-photo" src="assets/characters/${c.img.replace('.png', '-thumb.png')}" alt="${c.name}" loading="lazy">
       <div class="char-name">${c.name}</div>
-      <div class="char-role">${c.role} · ${c.place}</div>
+      <div class="char-role">${c.role}</div>
       <div class="char-bio">${c.bio}</div>
     </div>
   `).join('');
