@@ -63,6 +63,11 @@ class GameProvider extends ChangeNotifier {
     return characterWithState(id);
   }
 
+  /// true se questo sospettato è già stato accusato per errore in questo
+  /// tentativo: resta escluso dalla rosa, il giocatore non può riproporlo.
+  bool isExcludedSuspect(String characterId) =>
+      _state.sospettiEsclusi.contains(characterId);
+
   /// Indizi con il flag "trovato" aggiornato in base allo stato di partita.
   List<Clue> get clues {
     return kClues
@@ -205,18 +210,29 @@ class GameProvider extends ChangeNotifier {
     await _goToScene(prossimoId);
   }
 
-  /// Registra l'accusa formale del giocatore nel confronto finale.
-  /// Se corretta (Sandra), prosegue verso il confronto vero e proprio,
-  /// dove l'esito dipende ancora da indizi e fiducia accumulati. Se
-  /// sbagliata, porta direttamente al finale "errore giudiziario": il
-  /// vero colpevole resta libero e la persona accusata non lo perdona.
+  /// Registra l'accusa formale del giocatore nel confronto finale. Se
+  /// corretta (Sandra), prosegue verso il confronto vero e proprio, dove
+  /// l'esito dipende ancora da indizi e fiducia accumulati. Se sbagliata,
+  /// quel sospettato viene escluso dalla rosa (con un calo di fiducia,
+  /// conseguenza di un'accusa infondata) e il giocatore torna a scegliere
+  /// tra i rimanenti, finché non individua Sandra.
   Future<void> submitAccusation(String characterId) async {
-    _state = _state.copyWith(personaggioAccusato: characterId);
     if (characterId == 'sandra') {
+      _state = _state.copyWith(personaggioAccusato: characterId);
       await _goToScene('c10_s2');
-    } else {
-      await _goToScene('c10_finale_erroneo');
+      return;
     }
+
+    final esclusi = Set<String>.from(_state.sospettiEsclusi)..add(characterId);
+    final nuovaFiducia = Map<String, int>.from(_state.fiduciaPersonaggi);
+    nuovaFiducia[characterId] = ((nuovaFiducia[characterId] ?? 50) - 15).clamp(0, 100);
+
+    _state = _state.copyWith(
+      personaggioAccusato: characterId,
+      sospettiEsclusi: esclusi,
+      fiduciaPersonaggi: nuovaFiducia,
+    );
+    await _goToScene('c10_accusa_sbagliata');
   }
 
   Future<void> _goToScene(String sceneId) async {

@@ -1307,6 +1307,29 @@ final List<Chapter> kChapters = [
             'che hai scoperto: chi accusi?',
         richiedeAccusa: true,
       ),
+      // Scena-ponte raggiunta quando l'accusa è sbagliata: non è un finale,
+      // riporta il giocatore alla selezione del sospettato (che nel
+      // frattempo viene escluso dalla rosa) finché non individua Sandra.
+      Scene(
+        id: 'c10_accusa_sbagliata',
+        luogo: 'Golasecca — Riva del Ticino',
+        testoNarrativo:
+            'Il nome esce dalla tua bocca prima ancora di averlo deciso fino '
+            'in fondo: {accusato}. Il silenzio che segue è pesante. '
+            '{accusato} nega tutto, sotto shock — e qualcosa nel suo sguardo '
+            'ti dice che hai sbagliato persona. Riccardo ti stringe un '
+            'braccio: "Pensaci ancora, Segghy. Non è lei." Il tempo stringe, '
+            'ma hai ancora una possibilità: qualcun altro, lungo il fiume, sa '
+            'più di quanto ha detto.',
+        scelte: [
+          Choice(
+            id: 'c10_accusa_sbagliata_a',
+            testoScelta: 'Ripensaci: chi altro potrebbe essere?',
+            effetto: 'Riccardo annuisce, e insieme ripercorrete gli indizi da capo.',
+            prossimoNodo: 'c10_accusa',
+          ),
+        ],
+      ),
       Scene(
         id: 'c10_s2',
         luogo: 'Golasecca — Riva del Ticino',
@@ -1391,19 +1414,6 @@ final List<Chapter> kChapters = [
         endingId: 'perfetto',
         isFinaleCapitolo: true,
         indiziOttenibili: ['clue_confessione'],
-      ),
-      Scene(
-        id: 'c10_finale_erroneo',
-        luogo: 'Golasecca — Riva del Ticino',
-        testoNarrativo:
-            'Il nome esce dalla tua bocca prima ancora di averlo deciso fino '
-            'in fondo: {accusato}. Il silenzio che segue è peggiore di '
-            'qualunque urlo. {accusato} nega tutto, sotto shock, e le prove '
-            'che hai raccolto non bastano a reggere un\'accusa così diretta, '
-            'pronunciata davanti a tutti. Riccardo ti guarda, in cerca delle '
-            'parole giuste. Non ce ne sono.',
-        endingId: 'erroneo',
-        isFinaleCapitolo: true,
       ),
     ],
   ),

@@ -7,14 +7,17 @@ import '../../core/theme/scene_backgrounds.dart';
 import '../../core/widgets/numeric_keypad.dart';
 import '../../core/widgets/return_to_menu_button.dart';
 import '../../core/widgets/scene_background.dart';
-import '../../models/ending.dart';
 import '../../providers/game_provider.dart';
 
-/// Ultimo enigma del gioco, sbloccato solo risolvendo correttamente il caso
-/// (qualunque finale tranne quello dell'accusa sbagliata). In stile "escape
-/// room": la fibula antica recuperata durante l'indagine reca incise 4 cifre
-/// in numeri romani, che il giocatore deve tradurre e comporre per ottenere
-/// il codice segreto finale.
+/// Ultimo enigma del gioco, sbloccato solo dopo aver individuato la vera
+/// colpevole. In stile "escape room" a due fasi:
+///
+/// 1. Un cifrario di Cesare inciso sul retro della fibula: il giocatore
+///    ruota una "ghiera" (0-25 posizioni) finché il testo cifrato non torna
+///    a essere italiano leggibile — un vero e proprio lavoro di
+///    decifrazione, non una lettura diretta.
+/// 2. Una volta decifrata la frase, il giocatore compone il codice a 4
+///    cifre che vi è nascosto sul tastierino numerico.
 class EscapeRoomScreen extends StatefulWidget {
   const EscapeRoomScreen({super.key});
 
@@ -22,13 +25,27 @@ class EscapeRoomScreen extends StatefulWidget {
   State<EscapeRoomScreen> createState() => _EscapeRoomScreenState();
 }
 
+enum _Stage { cifrario, codice, rivelazione }
+
 class _EscapeRoomScreenState extends State<EscapeRoomScreen>
     with SingleTickerProviderStateMixin {
+  // Cifrario di Cesare: il testo cifrato qui sotto, ruotato all'indietro di
+  // 12 posizioni (tante quanti i capitoli dell'indagine), torna a essere
+  // "IL FIUME SUSSURRA QUATTRO QUATTRO DUE DUE".
+  static const String _cipherText =
+      'UX RUGYQ EGEEGDDM CGMFFDA CGMFFDA PGQ PGQ';
+  static const String _targetPlaintext =
+      'IL FIUME SUSSURRA QUATTRO QUATTRO DUE DUE';
   static const String _codice = '4422';
+
+  _Stage _stage = _Stage.cifrario;
+
+  double _shift = 0;
+  bool _hintVisible = false;
+  int _tentativiRotazione = 0;
 
   String _input = '';
   String? _errore;
-  bool _risolto = false;
   late final AnimationController _shakeController;
 
   @override
@@ -44,6 +61,35 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
   void dispose() {
     _shakeController.dispose();
     super.dispose();
+  }
+
+  String get _decodedPreview {
+    final shift = _shift.round();
+    final buffer = StringBuffer();
+    for (final unit in _cipherText.codeUnits) {
+      if (unit == 32) {
+        buffer.writeCharCode(32);
+        continue;
+      }
+      final idx = unit - 65;
+      final decoded = (idx - shift) % 26;
+      buffer.writeCharCode((decoded < 0 ? decoded + 26 : decoded) + 65);
+    }
+    return buffer.toString();
+  }
+
+  bool get _cifrarioRisolto => _decodedPreview == _targetPlaintext;
+
+  void _onShiftChanged(double value) {
+    setState(() {
+      _shift = value;
+      _tentativiRotazione++;
+    });
+  }
+
+  void _confirmCifrario() {
+    if (!_cifrarioRisolto) return;
+    setState(() => _stage = _Stage.codice);
   }
 
   void _addDigit(String d) {
@@ -62,11 +108,11 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
 
   void _checkCode() {
     if (_input == _codice) {
-      setState(() => _risolto = true);
+      setState(() => _stage = _Stage.rivelazione);
     } else {
       _shakeController.forward(from: 0);
       setState(() {
-        _errore = 'Combinazione errata. Rileggi bene i simboli sulla fibula.';
+        _errore = 'Combinazione errata. Rileggi bene la frase decifrata.';
         _input = '';
       });
     }
@@ -75,8 +121,7 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<GameProvider>();
-    final finale = provider.state.finale;
-    final sbloccato = finale != null && finale != EndingType.erroneo;
+    final sbloccato = provider.state.finale != null;
 
     if (!sbloccato) {
       return Scaffold(
@@ -120,27 +165,37 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
         type: SceneBackgroundType.scavoArcheologico,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 600),
-                transitionBuilder: (child, animation) => ScaleTransition(
-                  scale: animation,
-                  child: FadeTransition(opacity: animation, child: child),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            transitionBuilder: (child, animation) => ScaleTransition(
+              scale: animation,
+              child: FadeTransition(opacity: animation, child: child),
+            ),
+            child: switch (_stage) {
+              _Stage.cifrario => _CifrarioStage(
+                  key: const ValueKey('cifrario'),
+                  cipherText: _cipherText,
+                  decoded: _decodedPreview,
+                  risolto: _cifrarioRisolto,
+                  shift: _shift,
+                  onShiftChanged: _onShiftChanged,
+                  onContinua: _confirmCifrario,
+                  hintVisible: _hintVisible,
+                  showHintButton: _tentativiRotazione > 6,
+                  onToggleHint: () => setState(() => _hintVisible = !_hintVisible),
                 ),
-                child: _risolto
-                    ? _CodeReveal(key: const ValueKey('reveal'), code: _codice)
-                    : _PuzzleBody(
-                        key: const ValueKey('puzzle'),
-                        input: _input,
-                        errore: _errore,
-                        shakeController: _shakeController,
-                        onDigit: _addDigit,
-                        onBackspace: _removeDigit,
-                      ),
-              ),
-            ],
+              _Stage.codice => _CodiceStage(
+                  key: const ValueKey('codice'),
+                  fraseDecifrata: _targetPlaintext,
+                  input: _input,
+                  errore: _errore,
+                  shakeController: _shakeController,
+                  onDigit: _addDigit,
+                  onBackspace: _removeDigit,
+                ),
+              _Stage.rivelazione =>
+                _CodeReveal(key: const ValueKey('reveal'), code: _codice),
+            },
           ),
         ),
       ),
@@ -148,15 +203,176 @@ class _EscapeRoomScreenState extends State<EscapeRoomScreen>
   }
 }
 
-class _PuzzleBody extends StatelessWidget {
+/// Fase 1: la ghiera del cifrario di Cesare.
+class _CifrarioStage extends StatelessWidget {
+  final String cipherText;
+  final String decoded;
+  final bool risolto;
+  final double shift;
+  final ValueChanged<double> onShiftChanged;
+  final VoidCallback onContinua;
+  final bool hintVisible;
+  final bool showHintButton;
+  final VoidCallback onToggleHint;
+
+  const _CifrarioStage({
+    super.key,
+    required this.cipherText,
+    required this.decoded,
+    required this.risolto,
+    required this.shift,
+    required this.onShiftChanged,
+    required this.onContinua,
+    required this.hintVisible,
+    required this.showHintButton,
+    required this.onToggleHint,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('Il cifrario della fibula', style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 8),
+        Text(
+          'Sofia riconosce l\'incisione sul retro della fibula: non è '
+          'decorazione, è un cifrario a rotazione — lo stesso usato dai '
+          'trafficanti di reperti per nascondere le coordinate degli scavi. '
+          'Ruota la ghiera finché le lettere non tornano a formare parole '
+          'italiane.',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 20),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceHigh,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.surfaceVariant),
+          ),
+          child: Column(
+            children: [
+              Text('TESTO INCISO',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textMuted, fontSize: 11, letterSpacing: 1.5)),
+              const SizedBox(height: 8),
+              Text(
+                cipherText,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontFamily: 'monospace', letterSpacing: 2, color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+          decoration: BoxDecoration(
+            color: risolto
+                ? AppColors.trustHigh.withValues(alpha: 0.15)
+                : AppColors.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: risolto ? AppColors.trustHigh : AppColors.accentGold.withValues(alpha: 0.4),
+              width: risolto ? 1.6 : 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              Text('DECIFRATO',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: risolto ? AppColors.trustHigh : AppColors.accentGold,
+                      fontSize: 11,
+                      letterSpacing: 1.5)),
+              const SizedBox(height: 8),
+              Text(
+                decoded,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontFamily: 'monospace',
+                    letterSpacing: 2,
+                    color: risolto ? AppColors.trustHigh : AppColors.textPrimary),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Rotazione', style: Theme.of(context).textTheme.bodyMedium),
+            Text('${shift.round()}',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(color: AppColors.accentGold)),
+          ],
+        ),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: AppColors.accentGold,
+            inactiveTrackColor: AppColors.surfaceHigh,
+            thumbColor: AppColors.accentAmber,
+            overlayColor: AppColors.accentGold.withValues(alpha: 0.2),
+          ),
+          child: Slider(
+            value: shift,
+            min: 0,
+            max: 25,
+            divisions: 25,
+            onChanged: onShiftChanged,
+          ),
+        ),
+        const SizedBox(height: 8),
+        if (showHintButton) ...[
+          Center(
+            child: TextButton.icon(
+              onPressed: onToggleHint,
+              icon: const Icon(Icons.lightbulb_outline, size: 18),
+              label: Text(hintVisible ? 'Nascondi suggerimento' : 'Suggerimento'),
+            ),
+          ),
+          if (hintVisible)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                'Il numero dei capitoli della tua indagine potrebbe non essere un caso.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: AppColors.accentGold),
+              ),
+            ),
+        ],
+        const SizedBox(height: 8),
+        ElevatedButton.icon(
+          onPressed: risolto ? onContinua : null,
+          icon: const Icon(Icons.check_circle_outline),
+          label: const Text('CONTINUA'),
+        ),
+      ],
+    );
+  }
+}
+
+/// Fase 2: comporre il codice trovato nella frase decifrata.
+class _CodiceStage extends StatelessWidget {
+  final String fraseDecifrata;
   final String input;
   final String? errore;
   final AnimationController shakeController;
   final ValueChanged<String> onDigit;
   final VoidCallback onBackspace;
 
-  const _PuzzleBody({
+  const _CodiceStage({
     super.key,
+    required this.fraseDecifrata,
     required this.input,
     required this.errore,
     required this.shakeController,
@@ -169,41 +385,28 @@ class _PuzzleBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Il segreto della fibula', style: Theme.of(context).textTheme.titleLarge),
+        Text('Componi il codice', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
         Text(
-          'Prima di lasciare Golasecca, Sofia ti mostra un\'ultima cosa: sul '
-          'retro della fibula ritrovata, quasi invisibili, quattro simboli '
-          'incisi da chissà quanti secoli.',
+          'Il cifrario è decifrato. Ora componi sul tastierino le quattro '
+          'cifre nascoste nella frase.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
         Container(
-          padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
           decoration: BoxDecoration(
-            color: AppColors.surfaceHigh,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.accentGold.withValues(alpha: 0.5)),
+            color: AppColors.trustHigh.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.trustHigh.withValues(alpha: 0.5)),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: const [
-              _RomanGlyph('IV'),
-              _RomanGlyph('IV'),
-              _RomanGlyph('II'),
-              _RomanGlyph('II'),
-            ],
+          child: Text(
+            fraseDecifrata,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontFamily: 'monospace', letterSpacing: 1.5, color: AppColors.trustHigh),
           ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          'Sofia sorride: "Sono numeri romani, Segghy. Non serve un\'esperta '
-          'di archeologia per leggerli."',
-          textAlign: TextAlign.center,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(fontStyle: FontStyle.italic, color: AppColors.textMuted),
         ),
         const SizedBox(height: 24),
         AnimatedBuilder(
@@ -251,22 +454,6 @@ class _PuzzleBody extends StatelessWidget {
         const SizedBox(height: 8),
         NumericKeypad(onDigit: onDigit, onBackspace: onBackspace),
       ],
-    );
-  }
-}
-
-class _RomanGlyph extends StatelessWidget {
-  final String numeral;
-  const _RomanGlyph(this.numeral);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      numeral,
-      style: Theme.of(context).textTheme.displayMedium?.copyWith(
-            color: AppColors.accentGold,
-            fontWeight: FontWeight.w900,
-          ),
     );
   }
 }

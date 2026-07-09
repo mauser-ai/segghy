@@ -329,8 +329,12 @@ class _ChoicesView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (choices.isEmpty) {
+      // Caso limite difensivo (non dovrebbe verificarsi con i dati
+      // validati): nessuna scelta disponibile, si torna alla narrativa.
+      // Usa go() e non un pop() di Navigator, perché questa schermata
+      // viene raggiunta con go() e non ha nulla da "poppare" nello stack.
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!submitting) Navigator.of(context).maybePop();
+        if (!submitting) GoRouter.of(context).go('/narrative');
       });
       return const Center(child: CircularProgressIndicator());
     }

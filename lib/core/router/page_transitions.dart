@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-/// Transizione condivisa tra tutte le schermate: dissolvenza incrociata con
-/// una leggera risalita, più cinematografica dello scambio a scatto di
-/// default di GoRouter.
+/// Transizione condivisa tra tutte le schermate: una dissolvenza pulita e
+/// rapida, più cinematografica dello scambio a scatto di default di
+/// GoRouter. Deliberatamente semplice (nessuno slide/offset): un fade puro
+/// e breve riduce la finestra in cui un frame intermedio potrebbe mostrare
+/// contenuto non ancora aggiornato, ed evita di sovrapporre due animazioni
+/// (questa più quella interna di alcune schermate) che insieme potevano
+/// dare una sensazione di "salto"/ricaricamento durante il passaggio.
 CustomTransitionPage<void> buildFadeThroughPage({
   required LocalKey key,
   required Widget child,
@@ -11,19 +15,12 @@ CustomTransitionPage<void> buildFadeThroughPage({
   return CustomTransitionPage<void>(
     key: key,
     child: child,
-    transitionDuration: const Duration(milliseconds: 420),
-    reverseTransitionDuration: const Duration(milliseconds: 320),
+    transitionDuration: const Duration(milliseconds: 220),
+    reverseTransitionDuration: const Duration(milliseconds: 180),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
       return FadeTransition(
-        opacity: curved,
-        child: SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, 0.04),
-            end: Offset.zero,
-          ).animate(curved),
-          child: child,
-        ),
+        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+        child: child,
       );
     },
   );

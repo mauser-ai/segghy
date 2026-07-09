@@ -32,10 +32,14 @@ class GameState {
 
   final EndingType? finale;
 
-  /// Id del personaggio formalmente accusato nel confronto finale, se il
-  /// giocatore ha già effettuato l'accusa. Determina se si raggiunge un
-  /// finale corretto o il finale "errore giudiziario".
+  /// Id dell'ultimo personaggio formalmente accusato nel confronto finale
+  /// (corretto o sbagliato che sia). Usato per personalizzare il testo
+  /// della scena successiva con il suo nome.
   final String? personaggioAccusato;
+
+  /// Id dei sospettati già accusati per errore: il giocatore può
+  /// continuare a scegliere tra i rimanenti finché non individua Sandra.
+  final Set<String> sospettiEsclusi;
 
   final bool partitaIniziata;
 
@@ -54,6 +58,7 @@ class GameState {
     this.minigiochiCompletati = const {},
     this.finale,
     this.personaggioAccusato,
+    this.sospettiEsclusi = const {},
     this.partitaIniziata = false,
     this.ultimoSalvataggio = 0,
   });
@@ -86,6 +91,7 @@ class GameState {
     Set<String>? minigiochiCompletati,
     EndingType? finale,
     String? personaggioAccusato,
+    Set<String>? sospettiEsclusi,
     bool? partitaIniziata,
     int? ultimoSalvataggio,
   }) {
@@ -100,6 +106,7 @@ class GameState {
       minigiochiCompletati: minigiochiCompletati ?? this.minigiochiCompletati,
       finale: finale ?? this.finale,
       personaggioAccusato: personaggioAccusato ?? this.personaggioAccusato,
+      sospettiEsclusi: sospettiEsclusi ?? this.sospettiEsclusi,
       partitaIniziata: partitaIniziata ?? this.partitaIniziata,
       ultimoSalvataggio: ultimoSalvataggio ?? this.ultimoSalvataggio,
     );
@@ -132,6 +139,9 @@ class GameState {
           ? null
           : EndingType.values.firstWhere((e) => e.name == json['finale']),
       personaggioAccusato: json['personaggioAccusato'] as String?,
+      sospettiEsclusi: (json['sospettiEsclusi'] as List<dynamic>? ?? [])
+          .map((e) => e as String)
+          .toSet(),
       partitaIniziata: json['partitaIniziata'] as bool? ?? false,
       ultimoSalvataggio: json['ultimoSalvataggio'] as int? ?? 0,
     );
@@ -149,6 +159,7 @@ class GameState {
       'minigiochiCompletati': minigiochiCompletati.toList(),
       'finale': finale?.name,
       'personaggioAccusato': personaggioAccusato,
+      'sospettiEsclusi': sospettiEsclusi.toList(),
       'partitaIniziata': partitaIniziata,
       'ultimoSalvataggio': ultimoSalvataggio,
     };

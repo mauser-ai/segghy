@@ -11,8 +11,9 @@ import '../../data/mock/characters_data.dart';
 import '../../models/ending.dart';
 import '../../providers/game_provider.dart';
 
-/// Schermata finale: rivela quale dei quattro finali il giocatore ha
-/// ottenuto, con un riepilogo del percorso investigativo compiuto.
+/// Schermata finale: rivela quale dei tre finali il giocatore ha ottenuto,
+/// con un riepilogo del percorso investigativo compiuto. Vi si arriva solo
+/// dopo aver individuato correttamente Sandra nel confronto finale.
 class EndingScreen extends StatelessWidget {
   const EndingScreen({super.key});
 
@@ -24,8 +25,6 @@ class EndingScreen extends StatelessWidget {
         return AppColors.textMuted;
       case EndingType.perfetto:
         return AppColors.accentGold;
-      case EndingType.erroneo:
-        return AppColors.accentBlood;
     }
   }
 
@@ -37,8 +36,6 @@ class EndingScreen extends StatelessWidget {
         return Icons.nights_stay_outlined;
       case EndingType.perfetto:
         return Icons.emoji_events_outlined;
-      case EndingType.erroneo:
-        return Icons.gavel_outlined;
     }
   }
 
@@ -147,45 +144,40 @@ class EndingScreen extends StatelessWidget {
               const SizedBox(height: 28),
               StaggeredEntrance(
                 index: 4,
-                child: _CulpritReveal(
-                  ending: ending,
-                  accusedName: provider.accusedCharacter?.nome,
-                ),
+                child: _CulpritReveal(ending: ending),
               ),
-              if (ending != EndingType.erroneo) ...[
-                const SizedBox(height: 20),
-                StaggeredEntrance(
-                  index: 5,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.accentGold.withValues(alpha: 0.15),
-                          AppColors.accentGold.withValues(alpha: 0.03),
-                        ],
-                      ),
-                      border: Border.all(color: AppColors.accentGold.withValues(alpha: 0.5)),
-                    ),
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        const Icon(Icons.diamond_outlined, color: AppColors.accentGold, size: 28),
-                        const SizedBox(height: 8),
-                        Text('Hai risolto il caso: un ultimo segreto ti aspetta.',
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyMedium),
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          onPressed: () => context.push('/escape-room'),
-                          icon: const Icon(Icons.key_outlined),
-                          label: const Text('L\'ULTIMO ENIGMA'),
-                        ),
+              const SizedBox(height: 20),
+              StaggeredEntrance(
+                index: 5,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.accentGold.withValues(alpha: 0.15),
+                        AppColors.accentGold.withValues(alpha: 0.03),
                       ],
                     ),
+                    border: Border.all(color: AppColors.accentGold.withValues(alpha: 0.5)),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.diamond_outlined, color: AppColors.accentGold, size: 28),
+                      const SizedBox(height: 8),
+                      Text('Hai risolto il caso: un ultimo segreto ti aspetta.',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium),
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        onPressed: () => context.push('/escape-room'),
+                        icon: const Icon(Icons.key_outlined),
+                        label: const Text('L\'ULTIMO ENIGMA'),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
               const SizedBox(height: 28),
               StaggeredEntrance(
                 index: 6,
@@ -257,8 +249,7 @@ class EndingScreen extends StatelessWidget {
 /// a chi sta ancora leggendo il resoconto del finale sopra di essa.
 class _CulpritReveal extends StatefulWidget {
   final EndingType ending;
-  final String? accusedName;
-  const _CulpritReveal({required this.ending, this.accusedName});
+  const _CulpritReveal({required this.ending});
 
   @override
   State<_CulpritReveal> createState() => _CulpritRevealState();
@@ -275,10 +266,6 @@ class _CulpritRevealState extends State<_CulpritReveal> {
         return 'Le prove raccolte bastano a farla incriminare, anche senza una confessione piena.';
       case EndingType.oscuro:
         return 'Solo tu, ora, sai la verità. Il fascicolo resterà chiuso come "irrisolto".';
-      case EndingType.erroneo:
-        final accusato = widget.accusedName ?? 'la persona sbagliata';
-        return 'Hai accusato $accusato: il vero colpevole non è mai stato scoperto. '
-            'Sandra resta libera, e il caso si chiude senza giustizia.';
     }
   }
 

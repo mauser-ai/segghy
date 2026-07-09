@@ -137,6 +137,18 @@ class _CharacterPortraitState extends State<CharacterPortrait>
                         height: widget.size,
                         fit: BoxFit.cover,
                         alignment: const Alignment(0, -0.4),
+                        // Ricade sulle iniziali se la foto non carica,
+                        // invece di mostrare l'icona di errore rossa.
+                        errorBuilder: (context, error, stackTrace) => Center(
+                          child: Text(
+                            _initials,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: widget.size * 0.34,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
             ),

@@ -89,6 +89,20 @@ class CharacterAvatar extends StatelessWidget {
                   height: diameter,
                   fit: BoxFit.cover,
                   alignment: const Alignment(0, -0.4),
+                  // Se la foto non riesce a caricarsi (rete lenta, cache
+                  // di un service worker web non aggiornata...) ricadiamo
+                  // sulle iniziali invece di mostrare l'icona di errore
+                  // rossa di default: l'avatar resta sempre presentabile.
+                  errorBuilder: (context, error, stackTrace) => Center(
+                    child: Text(
+                      _initials,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: radius * 0.7,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

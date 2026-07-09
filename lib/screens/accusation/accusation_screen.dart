@@ -14,9 +14,10 @@ import '../../providers/game_provider.dart';
 
 /// Schermata del confronto finale: il giocatore deve scegliere formalmente
 /// chi accusare tra tutti i sospettati, guidato da quanto ha scoperto
-/// (fiducia e sospetto accumulati per ciascuno). È un'azione irreversibile
-/// che determina l'esito della partita: accusare la persona sbagliata
-/// porta a un finale dedicato in cui la vera colpevole resta libera.
+/// (fiducia e sospetto accumulati per ciascuno). Accusare la persona
+/// sbagliata non chiude la partita: quel sospettato viene escluso dalla
+/// rosa (con un calo di fiducia) e si può riprovare, finché non si
+/// individua Sandra.
 class AccusationScreen extends StatefulWidget {
   const AccusationScreen({super.key});
 
@@ -29,6 +30,7 @@ class _AccusationScreenState extends State<AccusationScreen> {
   bool _submitting = false;
 
   Future<void> _confirmAndSubmit(Character suspect) async {
+    final eCorretto = suspect.id == 'sandra';
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -36,8 +38,13 @@ class _AccusationScreenState extends State<AccusationScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Confermi l\'accusa?'),
         content: Text(
-          'Stai per accusare formalmente ${suspect.nome} davanti a tutti. '
-          'Non potrai tornare indietro: pensaci bene prima di parlare.',
+          eCorretto
+              ? 'Stai per accusare formalmente ${suspect.nome} davanti a '
+                  'tutti. Se hai ragione, è la fine dell\'indagine: pensaci '
+                  'bene prima di parlare.'
+              : 'Stai per accusare formalmente ${suspect.nome} davanti a '
+                  'tutti. Se sbagli, non potrai più tornare su questo nome: '
+                  'dovrai cercare altrove.',
           style: Theme.of(context)
               .textTheme
               .bodyMedium
@@ -119,7 +126,7 @@ class _AccusationScreenState extends State<AccusationScreen> {
                   const SizedBox(height: 6),
                   Text(
                     'Ripensa a indizi, fiducia e sospetto raccolti finora. '
-                    'Puoi scegliere una sola persona.',
+                    'Se sbagli nome potrai riprovare con un altro sospettato.',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
@@ -132,67 +139,88 @@ class _AccusationScreenState extends State<AccusationScreen> {
                 itemBuilder: (context, index) {
                   final suspect = suspects[index];
                   final selected = _selectedId == suspect.id;
+                  final escluso = provider.isExcludedSuspect(suspect.id);
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: Material(
-                      color: selected
-                          ? AppColors.accentBlood.withValues(alpha: 0.12)
-                          : AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      child: InkWell(
+                    child: Opacity(
+                      opacity: escluso ? 0.45 : 1,
+                      child: Material(
+                        color: selected
+                            ? AppColors.accentBlood.withValues(alpha: 0.12)
+                            : AppColors.surface,
                         borderRadius: BorderRadius.circular(16),
-                        onTap: _submitting
-                            ? null
-                            : () => setState(() => _selectedId = suspect.id),
-                        child: Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: selected
-                                  ? AppColors.accentBlood
-                                  : AppColors.surfaceHigh,
-                              width: selected ? 1.6 : 1,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: (_submitting || escluso)
+                              ? null
+                              : () => setState(() => _selectedId = suspect.id),
+                          child: Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: selected
+                                    ? AppColors.accentBlood
+                                    : AppColors.surfaceHigh,
+                                width: selected ? 1.6 : 1,
+                              ),
                             ),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CharacterAvatar(
-                                nome: suspect.nome,
-                                id: suspect.id,
-                                imagePath: suspect.immagine,
-                                sospettato: true,
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(suspect.nome,
-                                            style: Theme.of(context).textTheme.titleMedium),
-                                        const Spacer(),
-                                        if (selected)
-                                          const Icon(Icons.check_circle,
-                                              color: AppColors.accentBlood, size: 20),
-                                      ],
-                                    ),
-                                    Text('${suspect.ruolo} · ${suspect.luogo}',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(fontSize: 12)),
-                                    const SizedBox(height: 10),
-                                    TrustMeter(livello: suspect.livelloFiducia),
-                                    const SizedBox(height: 8),
-                                    SuspicionMeter(
-                                        livello: provider.suspicionOf(suspect.id)),
-                                  ],
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                CharacterAvatar(
+                                  nome: suspect.nome,
+                                  id: suspect.id,
+                                  imagePath: suspect.immagine,
+                                  sospettato: true,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(suspect.nome,
+                                              style: Theme.of(context).textTheme.titleMedium),
+                                          const Spacer(),
+                                          if (escluso)
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.surfaceHigh,
+                                                borderRadius: BorderRadius.circular(10),
+                                                border: Border.all(color: AppColors.textMuted),
+                                              ),
+                                              child: const Text(
+                                                'GIÀ ESCLUSO',
+                                                style: TextStyle(
+                                                    color: AppColors.textMuted,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold),
+                                              ),
+                                            )
+                                          else if (selected)
+                                            const Icon(Icons.check_circle,
+                                                color: AppColors.accentBlood, size: 20),
+                                        ],
+                                      ),
+                                      Text('${suspect.ruolo} · ${suspect.luogo}',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(fontSize: 12)),
+                                      const SizedBox(height: 10),
+                                      TrustMeter(livello: suspect.livelloFiducia),
+                                      const SizedBox(height: 8),
+                                      SuspicionMeter(
+                                          livello: provider.suspicionOf(suspect.id)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),

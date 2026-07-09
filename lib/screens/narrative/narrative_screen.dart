@@ -24,17 +24,23 @@ class NarrativeScreen extends StatefulWidget {
 }
 
 class _NarrativeScreenState extends State<NarrativeScreen> {
-  // GoRouter riusa la stessa Route (e quindi lo stesso State) ogni volta che
-  // si torna su '/narrative' con lo stesso path: initState() perciò NON
-  // rifire ad ogni cambio scena. Per intercettare in modo affidabile "sono
-  // entrata in una scena nuova" confrontiamo l'id della scena dentro build()
-  // invece di affidarci a initState().
+  // Ogni scena arriva qui tramite go(), che sostituisce l'intero stack di
+  // navigazione: questa schermata viene quindi sempre rimontata da zero,
+  // non riutilizzata. Il guard sotto resta comunque come difesa in
+  // profondità nel caso in cui in futuro un punto del codice raggiunga
+  // '/narrative' senza passare da un nuovo mount.
   String? _lastProcessedSceneId;
 
   void _processSceneEntry(String sceneId) {
     if (_lastProcessedSceneId == sceneId) return;
     _lastProcessedSceneId = sceneId;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      // Piccola attesa oltre la durata della transizione di pagina: senza
+      // questa pausa, uno snackbar o un overlay potevano comparire mentre
+      // la schermata stava ancora dissolvendosi in entrata, dando una
+      // sensazione di "scatto"/ricaricamento invece di un arrivo pulito.
+      await Future.delayed(const Duration(milliseconds: 260));
       if (!mounted) return;
       final provider = context.read<GameProvider>();
       for (final clue in provider.clueJustFoundInCurrentScene) {
@@ -88,48 +94,38 @@ class _NarrativeScreenState extends State<NarrativeScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 450),
-                  transitionBuilder: (child, animation) => FadeTransition(
-                    opacity: animation,
-                    child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 0.05),
-                        end: Offset.zero,
-                      ).animate(CurvedAnimation(
-                          parent: animation, curve: Curves.easeOutCubic)),
-                      child: child,
-                    ),
-                  ),
-                  child: SingleChildScrollView(
-                    key: ValueKey(scene.id),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.place_outlined,
-                                size: 16, color: AppColors.accentGold),
-                            const SizedBox(width: 6),
-                            Text(scene.luogo,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                        color: AppColors.accentGold,
-                                        fontWeight: FontWeight.w600)),
-                          ],
-                        ),
-                        const SizedBox(height: 18),
-                        Text(
-                          personalizeText(scene.testoNarrativo, provider),
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(height: 1.7),
-                        ),
-                      ],
-                    ),
+                // Niente animazione interna qui: la schermata viene sempre
+                // rimontata da zero ad ogni cambio scena (vedi sopra), quindi
+                // l'unica animazione di ingresso è quella della transizione
+                // di pagina. Sovrapporne una seconda qui non farebbe altro
+                // che aumentare il rischio di un effetto "doppio scatto".
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.place_outlined,
+                              size: 16, color: AppColors.accentGold),
+                          const SizedBox(width: 6),
+                          Text(scene.luogo,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                      color: AppColors.accentGold,
+                                      fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      Text(
+                        personalizeText(scene.testoNarrativo, provider),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.copyWith(height: 1.7),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -137,7 +133,15 @@ class _NarrativeScreenState extends State<NarrativeScreen> {
               if (minigiocoDaRisolvere)
                 _PulsingButton(
                   child: ElevatedButton.icon(
-                    onPressed: () => context.push('/minigame'),
+                    // go() invece di push(): sostituisce completamente lo
+                    // stack di navigazione. Con push(), questa schermata
+                    // sarebbe rimasta montata (ma nascosta) sotto il
+                    // minigioco, e avrebbe continuato a ricostruirsi ogni
+                    // volta che il Provider cambia stato durante il
+                    // minigioco: quel contenuto "vecchio" poteva intravedersi
+                    // per un istante durante la transizione verso la scena
+                    // successiva. go() evita del tutto il problema.
+                    onPressed: () => context.go('/minigame'),
                     icon: const Icon(Icons.extension_outlined),
                     label: const Text('INDAGA'),
                   ),
@@ -145,7 +149,7 @@ class _NarrativeScreenState extends State<NarrativeScreen> {
               else if (accusaDaFare)
                 _PulsingButton(
                   child: ElevatedButton.icon(
-                    onPressed: () => context.push('/accusation'),
+                    onPressed: () => context.go('/accusation'),
                     icon: const Icon(Icons.gavel_outlined),
                     label: const Text('ACCUSA'),
                   ),
@@ -153,7 +157,7 @@ class _NarrativeScreenState extends State<NarrativeScreen> {
               else if (hasNext)
                 _PulsingButton(
                   child: ElevatedButton.icon(
-                    onPressed: () => context.push('/dialogue'),
+                    onPressed: () => context.go('/dialogue'),
                     icon: const Icon(Icons.arrow_forward_rounded),
                     label: const Text('CONTINUA'),
                   ),
